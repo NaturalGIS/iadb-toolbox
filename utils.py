@@ -18,6 +18,7 @@
 """
 
 import os
+from tempfile import NamedTemporaryFile
 
 from qgis.PyQt.QtCore import QProcess
 from qgis.core import (
@@ -38,6 +39,24 @@ SPH_EXECUTABLE = "SPH_EXECUTABLE"
 def sph_executable():
     filePath = ProcessingConfig.getSetting(SPH_EXECUTABLE)
     return filePath if filePath is not None else "sph24"
+
+
+def generate_batch_file(file_name):
+    input_file = NamedTemporaryFile(mode="wt", suffix=".txt", encoding="utf-8", delete=False)
+    input_file_name = input_file.name
+    input_file.close()
+    with open(input_file_name, "w", encoding="utf-8") as f:
+        for i in range(3):
+            f.write(f"{file_name}\n" )
+
+    batch_file = NamedTemporaryFile(mode="wt", suffix=".bat", encoding="utf-8", delete=False)
+    batch_file_name = batch_file.name
+    batch_file.close()
+
+    with open(batch_file_name, "w", encoding="utf-8") as f:
+        f.write(f"{sph_executable()} < {input_file_name}\n" )
+
+    return batch_file_name, input_file_name
 
 
 def execute(commands, feedback=None):

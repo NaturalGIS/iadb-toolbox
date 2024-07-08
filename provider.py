@@ -26,6 +26,7 @@ from qgis.core import QgsProcessingProvider
 
 from processing.core.ProcessingConfig import ProcessingConfig, Setting
 
+from processing_iadb.algs.calculate_landslide import CalculateLandslide
 from processing_iadb.utils import PLUGIN_ROOT, SPH_EXECUTABLE, sph_executable
 
 
@@ -65,7 +66,7 @@ class IadbProvider(QgsProcessingProvider):
         ProcessingConfig.removeSetting(SPH_EXECUTABLE)
 
     def loadAlgorithms(self):
-        self.algs = []
+        self.algs = [CalculateLandslide()]
         for a in self.algs:
             self.addAlgorithm(a)
 
