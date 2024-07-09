@@ -46,7 +46,7 @@ def generate_batch_file(file_name):
     input_file_name = input_file.name
     input_file.close()
     with open(input_file_name, "w", encoding="utf-8") as f:
-        for i in range(3):
+        for i in range(2):
             f.write(f"{file_name}\n" )
 
     batch_file = NamedTemporaryFile(mode="wt", suffix=".bat", encoding="utf-8", delete=False)
