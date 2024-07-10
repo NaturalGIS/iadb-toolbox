@@ -23,6 +23,7 @@ from tempfile import NamedTemporaryFile
 from qgis.PyQt.QtCore import QProcess
 from qgis.core import (
     Qgis,
+    QgsRectangle,
     QgsMessageLog,
     QgsRunProcess,
     QgsBlockingProcess,
@@ -39,24 +40,6 @@ SPH_EXECUTABLE = "SPH_EXECUTABLE"
 def sph_executable():
     filePath = ProcessingConfig.getSetting(SPH_EXECUTABLE)
     return filePath if filePath is not None else "sph24"
-
-
-def generate_batch_file(file_name):
-    input_file = NamedTemporaryFile(mode="wt", suffix=".txt", encoding="utf-8", delete=False)
-    input_file_name = input_file.name
-    input_file.close()
-    with open(input_file_name, "w", encoding="utf-8") as f:
-        for i in range(2):
-            f.write(f"{file_name}\n" )
-
-    batch_file = NamedTemporaryFile(mode="wt", suffix=".bat", encoding="utf-8", delete=False)
-    batch_file_name = batch_file.name
-    batch_file.close()
-
-    with open(batch_file_name, "w", encoding="utf-8") as f:
-        f.write(f"{sph_executable()} < {input_file_name}\n" )
-
-    return batch_file_name, input_file_name
 
 
 def execute(commands, feedback=None):
@@ -114,3 +97,57 @@ def execute(commands, feedback=None):
         )
     else:
         feedback.reportError("Process returned error code {}".format(res))
+
+
+def generate_batch_file(file_name):
+    input_file = NamedTemporaryFile(mode="wt", suffix=".txt", encoding="utf-8", delete=False)
+    input_file_name = input_file.name
+    input_file.close()
+    with open(input_file_name, "w", encoding="utf-8") as f:
+        for i in range(2):
+            f.write(f"{file_name}\n" )
+
+    batch_file = NamedTemporaryFile(mode="wt", suffix=".bat", encoding="utf-8", delete=False)
+    batch_file_name = batch_file.name
+    batch_file.close()
+
+    with open(batch_file_name, "w", encoding="utf-8") as f:
+        f.write(f"{sph_executable()} < {input_file_name}\n" )
+
+    return batch_file_name, input_file_name
+
+
+def dem2top(layer, file_path):
+    print("CALLING dem2top", layer, file_path)
+    provider = layer.dataProvider()
+    width = provider.xSize()
+    height = provider.ySize()
+    pixel_size = layer.rasterUnitsPerPixelX()
+    pixel_count = width * height
+    extent = layer.extent()
+
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write("ictop\n")
+        f.write("11\n")
+        f.write("np\tdeltx\n")
+        f.write(f"{pixel_count}\t{pixel_size}\n")
+        f.write("X Y Z\n")
+
+        y = 0
+        for r in range(height, 0, -1):
+            x_min = extent.xMinimum()
+            x_max = extent.xMaximum()
+            y_min = extent.yMaximum() - (r - 1) * pixel_size
+            y_max = extent.yMaximum() - r * pixel_size
+            block_extent = QgsRectangle(x_min, y_min, x_max, y_max)
+            block = provider.block(1, block_extent, width, height, None)
+
+            x = 0
+            for i in range(block.width()):
+                f.write(f"{x}\t{y}\t{block.value(0, i)}\n")
+                x += pixel_size
+
+            y += pixel_size
+
+        f.write("terrain\n")
+        f.write("0\n")
