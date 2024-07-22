@@ -117,14 +117,10 @@ def generate_batch_file(work_dir, name):
     return batch_file
 
 
-def copy_inputs(data_file, points_file, dem):
+def copy_inputs(points_file, dem):
     work_dir = mkdtemp(prefix="sph-")
 
     shutil.copy(sph_executable(), work_dir)
-
-    file_name = os.path.split(data_file)[1]
-    data_file_name = os.path.join(work_dir, file_name)
-    shutil.copyfile(data_file, data_file_name)
 
     file_name = os.path.split(points_file)[1]
     points_file_name = os.path.join(work_dir, file_name)
@@ -155,10 +151,46 @@ def generate_master_file(file_name, params):
         )
         f.write("dt_sph  ic_adapt    \n")
         f.write("0.1      1  \n")
-        f.write(" Ntime curves     max pts in them   \n")
+        f.write("Ntime curves     max pts in them   \n")
         f.write("      0              6  \n")
         f.write("ic_cases_win      ic_eros\n")
         f.write("    0                0 \n")
+
+
+def generate_data_file(file_name, params):
+    with open(file_name, "w", encoding="utf-8") as f:
+        f.write("      1\n")
+        f.write(f" ---- {params['problem_name']}\n")
+        f.write("Type of SW Algorithm\n")
+        f.write("  0\n")
+        f.write(" nhist\n")
+        f.write("  0\n")
+        f.write(" ndimn\n")
+        f.write("  2\n")
+        f.write(" ic_soil  ic_water  ic_vps  ic_abs\n")
+        f.write("   1         0       0       0   \n")
+        f.write(" Landslide type of input     h_inf_SW  \n")
+        f.write("    6                          0.1\n")
+        f.write("pts file name\n")
+        f.write(f" {params['problem_name']}\n")
+        f.write(" pa_sph,  nnps, sle, skf \n")
+        f.write("   2       2     2    1         \n")
+        f.write(" sum_den,  av_vel, virt_part , nor_dens  \n")
+        f.write("    T         T      F            F       \n")
+        f.write(" cgra  dens  cmanning    4..    nfrict     Tauy0   constK  visco   tanfi8  hfrict0    c11   tanfi0   .Bfact     14..   15..Comp  end  \n")
+        f.write(f"  {params['c1_graw']}   {params['c2_dens']}  {params['c3_voelmy']}         {params['c4_hungr']}       {params['c5_fric']}         {params['c6_tauy']}     0.0     {params['c8_visco']}      {params['c9_tanfi']}    1.e-3     0.0   0.218      0.0     0.0      0.001\n")
+        f.write(" K0 activated?\n")
+        f.write("  0\n")
+        f.write(" icpwp \n")
+        f.write("  0\n")
+        f.write("coarse mesh saving utility?\n")
+        f.write("  0\n")
+        f.write("control points?\n")
+        f.write("  0\n")
+        f.write("GID filter   1.hs  2.disp 3.v  4.Pw  5 eros   6..Z  7..hrel  8..hw  9..eta  10.. hs+hw  11 dumm   12...dumm\n")
+        f.write("               1      1    0    0      0        0        0       0       0     0          0          0\n")
+        f.write("T_change_to_W\n")
+        f.write("  1.e+12    \n")
 
 
 def dem2top(layer, file_path):

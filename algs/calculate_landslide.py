@@ -38,17 +38,29 @@ from processing_iadb.utils import (
     execute,
     copy_inputs,
     generate_master_file,
+    generate_data_file,
 )
 
 
 class CalculateLandslide(IadbAlgorithm):
 
     PROBLEM_NAME = "PROBLEM_NAME"
+
     DT = "DT"
     TIME_END = "TIME_END"
     PRINT_STEP = "PRINT_STEP"
 
-    DATA = "DATA"
+    LAW_TYPE = "LAW_TYPE"
+    C1_GRAW = "C1_GRAW"
+    C2_DENS = "C2_DENS"
+    C3_VOELMY = "C3_VOELMY"
+    C4_HUNGR = "C4_HUNGR"
+    C5_FRIC = "C5_FRIC"
+    C6_TAUY = "C6_TAUY"
+    C8_VISCO = "C8_VISCO"
+    C9_TANFI = "C9_TANFI"
+
+    #DATA = "DATA"
     POINTS = "POINTS"
     DEM = "DEM"
     OUTPUT = "OUTPUT"
@@ -97,7 +109,17 @@ class CalculateLandslide(IadbAlgorithm):
             )
         )
 
-        self.addParameter(QgsProcessingParameterFile(self.DATA, self.tr("Data file")))
+        self.addParameter(QgsProcessingParameterNumber(self.LAW_TYPE, self.tr("law type"), Qgis.ProcessingNumberParameterType.Integer, 7, minValue=1, maxValue=10))
+        self.addParameter(QgsProcessingParameterNumber(self.C1_GRAW, self.tr("C1 graw"), Qgis.ProcessingNumberParameterType.Double, 9.81, minValue=1e-3, maxValue=10))
+        self.addParameter(QgsProcessingParameterNumber(self.C2_DENS, self.tr("C2 dens"), Qgis.ProcessingNumberParameterType.Integer, 2000, minValue=1, maxValue=10000))
+        self.addParameter(QgsProcessingParameterNumber(self.C3_VOELMY, self.tr("C3 voellmy"), Qgis.ProcessingNumberParameterType.Integer, 0, minValue=0, maxValue=100))
+        self.addParameter(QgsProcessingParameterNumber(self.C4_HUNGR, self.tr("C4 hungr"), Qgis.ProcessingNumberParameterType.Integer, 0, minValue=0, maxValue=100))
+        self.addParameter(QgsProcessingParameterNumber(self.C5_FRIC, self.tr("C5 fric"), Qgis.ProcessingNumberParameterType.Integer, 7, minValue=0, maxValue=100))
+        self.addParameter(QgsProcessingParameterNumber(self.C6_TAUY, self.tr("C6 tauy"), Qgis.ProcessingNumberParameterType.Double, 0, minValue=0, maxValue=100))
+        self.addParameter(QgsProcessingParameterNumber(self.C8_VISCO, self.tr("C8 visco"), Qgis.ProcessingNumberParameterType.Double, 0, minValue=0, maxValue=100))
+        self.addParameter(QgsProcessingParameterNumber(self.C9_TANFI, self.tr("C9 tanfi"), Qgis.ProcessingNumberParameterType.Double, 0.218, minValue=0, maxValue=1))
+
+        #self.addParameter(QgsProcessingParameterFile(self.DATA, self.tr("Data file")))
         self.addParameter(
             QgsProcessingParameterFile(self.POINTS, self.tr("Points file"))
         )
@@ -112,11 +134,22 @@ class CalculateLandslide(IadbAlgorithm):
 
     def processAlgorithm(self, parameters, context, feedback):
         problem_name = self.parameterAsString(parameters, self.PROBLEM_NAME, context)
+
         dt = self.parameterAsDouble(parameters, self.DT, context)
         time_end = self.parameterAsInt(parameters, self.TIME_END, context)
         print_step = self.parameterAsInt(parameters, self.PRINT_STEP, context)
 
-        data_file = self.parameterAsFile(parameters, self.DATA, context)
+        law_type = self.parameterAsInt(parameters, self.LAW_TYPE, context)
+        c1_graw = self.parameterAsInt(parameters, self.C1_GRAW, context)
+        c2_dens = self.parameterAsInt(parameters, self.C2_DENS, context)
+        c3_voelmy = self.parameterAsInt(parameters, self.C3_VOELMY, context)
+        c4_hungr = self.parameterAsInt(parameters, self.C4_HUNGR, context)
+        c5_fric = self.parameterAsInt(parameters, self.C5_FRIC, context)
+        c6_tauy = self.parameterAsInt(parameters, self.C6_TAUY, context)
+        c8_visco = self.parameterAsInt(parameters, self.C8_VISCO, context)
+        c9_tanfi = self.parameterAsInt(parameters, self.C9_TANFI, context)
+
+        #data_file = self.parameterAsFile(parameters, self.DATA, context)
         points_file = self.parameterAsFile(parameters, self.POINTS, context)
 
         dem = self.parameterAsRasterLayer(parameters, self.DEM, context)
@@ -130,13 +163,23 @@ class CalculateLandslide(IadbAlgorithm):
             "dt": dt,
             "time_end": time_end,
             "print_step": print_step,
+            "law_type": law_type,
+            "c1_graw": c1_graw,
+            "c2_dens": c2_dens,
+            "c3_voelmy": c3_voelmy,
+            "c4_hungr": c4_hungr,
+            "c5_fric": c5_fric,
+            "c6_tauy": c6_tauy,
+            "c8_visco": c8_visco,
+            "c9_tanfi": c9_tanfi,
         }
 
         feedback.pushInfo(self.tr("Copying files…"))
-        work_dir = copy_inputs(data_file, points_file, dem)
+        work_dir = copy_inputs(points_file, dem)
         generate_master_file(
             os.path.join(work_dir, f"{problem_name}.MASTER.DAT"), params
         )
+        generate_data_file(os.path.join(work_dir, f"{problem_name}.DAT"), params)
         batch_file = generate_batch_file(work_dir, problem_name)
 
         feedback.pushInfo(self.tr("Running SPH24…"))
