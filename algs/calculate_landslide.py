@@ -60,9 +60,9 @@ class CalculateLandslide(IadbAlgorithm):
     C8_VISCO = "C8_VISCO"
     C9_TANFI = "C9_TANFI"
 
-    #DATA = "DATA"
     POINTS = "POINTS"
     DEM = "DEM"
+
     OUTPUT = "OUTPUT"
 
     def name(self):
@@ -119,7 +119,6 @@ class CalculateLandslide(IadbAlgorithm):
         self.addParameter(QgsProcessingParameterNumber(self.C8_VISCO, self.tr("C8 visco"), Qgis.ProcessingNumberParameterType.Double, 0, minValue=0, maxValue=100))
         self.addParameter(QgsProcessingParameterNumber(self.C9_TANFI, self.tr("C9 tanfi"), Qgis.ProcessingNumberParameterType.Double, 0.218, minValue=0, maxValue=1))
 
-        #self.addParameter(QgsProcessingParameterFile(self.DATA, self.tr("Data file")))
         self.addParameter(
             QgsProcessingParameterFile(self.POINTS, self.tr("Points file"))
         )
