@@ -64,6 +64,7 @@ def execute(commands, feedback=None):
         if onStdOut.buffer.endswith(("\n", "\r")):
             feedback.pushConsoleInfo(onStdOut.buffer.rstrip())
             onStdOut.buffer = ""
+            onStdOut.progress += 1
 
     onStdOut.progress = 0
     onStdOut.buffer = ""
@@ -104,26 +105,22 @@ def generate_batch_file(work_dir, name):
     input_file = os.path.join(work_dir, "files.txt")
     with open(input_file, "w", encoding="utf-8") as f:
         for i in range(2):
-            f.write(f"{name}\n" )
+            f.write(f"{name}\n")
 
     batch_file = os.path.join(work_dir, f"{name}.bat")
     with open(batch_file, "w", encoding="utf-8") as f:
         f.write("set CWDIR=%~dp0\n")
         f.write(f"cd {work_dir}\n")
-        f.write(f"{sph_executable()} < {input_file}\n" )
+        f.write(f"{sph_executable()} < {input_file}\n")
         f.write("cd %WDIR%\n")
 
     return batch_file
 
 
-def copy_inputs(problem_file, data_file, points_file, dem):
-    work_dir = mkdtemp("sph-")
+def copy_inputs(data_file, points_file, dem):
+    work_dir = mkdtemp(prefix="sph-")
 
     shutil.copy(sph_executable(), work_dir)
-
-    file_name = os.path.split(problem_file)[1]
-    problem_file_name = os.path.join(work_dir, file_name)
-    shutil.copyfile(problem_file, problem_file_name)
 
     file_name = os.path.split(data_file)[1]
     data_file_name = os.path.join(work_dir, file_name)
@@ -138,6 +135,30 @@ def copy_inputs(problem_file, data_file, points_file, dem):
     dem2top(dem, dem_file_name)
 
     return work_dir
+
+
+def generate_master_file(file_name, params):
+    with open(file_name, "w", encoding="utf-8") as f:
+        f.write("1\n")
+        f.write(f"{params['problem_name']}\n")
+        f.write("if_sph if_gfl if_tgf\n")
+        f.write("  1      0      0 \n")
+        f.write("SPH_problem_type   SPH_t_integ_Alg\n")
+        f.write("       1               4\n")
+        f.write("sph problem name\n")
+        f.write(f"{params['problem_name']}\n")
+        f.write("dt      time_end   maxtimesteps\n")
+        f.write(f"{params['dt']}      {params['time_end']}       {1000000}\n")
+        f.write("print_step   save_step  plot_step\n")
+        f.write(
+            f"{params['print_step']}          {params['print_step']}       {params['print_step']}\n"
+        )
+        f.write("dt_sph  ic_adapt    \n")
+        f.write("0.1      1  \n")
+        f.write(" Ntime curves     max pts in them   \n")
+        f.write("      0              6  \n")
+        f.write("ic_cases_win      ic_eros\n")
+        f.write("    0                0 \n")
 
 
 def dem2top(layer, file_path):
