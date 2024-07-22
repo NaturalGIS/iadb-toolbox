@@ -144,7 +144,7 @@ def generate_master_file(file_name, params):
         f.write("sph problem name\n")
         f.write(f"{params['problem_name']}\n")
         f.write("dt      time_end   maxtimesteps\n")
-        f.write(f"{params['dt']}      {params['time_end']}       {1000000}\n")
+        f.write(f"{params['dt']}      {params['time_end']}       1000000\n")
         f.write("print_step   save_step  plot_step\n")
         f.write(
             f"{params['print_step']}          {params['print_step']}       {params['print_step']}\n"
