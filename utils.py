@@ -18,7 +18,8 @@
 """
 
 import os
-from tempfile import NamedTemporaryFile
+import shutil
+from tempfile import NamedTemporaryFile, mkdtemp
 
 from qgis.PyQt.QtCore import QProcess
 from qgis.core import (
@@ -99,26 +100,47 @@ def execute(commands, feedback=None):
         feedback.reportError("Process returned error code {}".format(res))
 
 
-def generate_batch_file(file_name):
-    input_file = NamedTemporaryFile(mode="wt", suffix=".txt", encoding="utf-8", delete=False)
-    input_file_name = input_file.name
-    input_file.close()
-    with open(input_file_name, "w", encoding="utf-8") as f:
+def generate_batch_file(work_dir, name):
+    input_file = os.path.join(work_dir, "files.txt")
+    with open(input_file, "w", encoding="utf-8") as f:
         for i in range(2):
-            f.write(f"{file_name}\n" )
+            f.write(f"{name}\n" )
 
-    batch_file = NamedTemporaryFile(mode="wt", suffix=".bat", encoding="utf-8", delete=False)
-    batch_file_name = batch_file.name
-    batch_file.close()
+    batch_file = os.path.join(work_dir, f"{name}.bat")
+    with open(batch_file, "w", encoding="utf-8") as f:
+        f.write("set CWDIR=%~dp0\n")
+        f.write(f"cd {work_dir}\n")
+        f.write(f"{sph_executable()} < {input_file}\n" )
+        f.write("cd %WDIR%\n")
 
-    with open(batch_file_name, "w", encoding="utf-8") as f:
-        f.write(f"{sph_executable()} < {input_file_name}\n" )
+    return batch_file
 
-    return batch_file_name, input_file_name
+
+def copy_inputs(problem_file, data_file, points_file, dem):
+    work_dir = mkdtemp("sph-")
+
+    shutil.copy(sph_executable(), work_dir)
+
+    file_name = os.path.split(problem_file)[1]
+    problem_file_name = os.path.join(work_dir, file_name)
+    shutil.copyfile(problem_file, problem_file_name)
+
+    file_name = os.path.split(data_file)[1]
+    data_file_name = os.path.join(work_dir, file_name)
+    shutil.copyfile(data_file, data_file_name)
+
+    file_name = os.path.split(points_file)[1]
+    points_file_name = os.path.join(work_dir, file_name)
+    shutil.copyfile(points_file, points_file_name)
+
+    file_name = os.path.split(dem.source())[1]
+    dem_file_name = os.path.join(work_dir, f"{os.path.splitext(file_name)[0]}.top")
+    dem2top(dem, dem_file_name)
+
+    return work_dir
 
 
 def dem2top(layer, file_path):
-    print("CALLING dem2top", layer, file_path)
     provider = layer.dataProvider()
     width = provider.xSize()
     height = provider.ySize()

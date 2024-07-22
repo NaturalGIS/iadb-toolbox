@@ -30,7 +30,7 @@ from qgis.core import (
 from processing.core.ProcessingConfig import ProcessingConfig
 
 from processing_iadb.algorithm import IadbAlgorithm
-from processing_iadb.utils import sph_executable, generate_batch_file, execute, dem2top
+from processing_iadb.utils import sph_executable, generate_batch_file, execute, copy_inputs
 
 
 class CalculateLandslide(IadbAlgorithm):
@@ -68,28 +68,9 @@ class CalculateLandslide(IadbAlgorithm):
 
         output = self.parameterAsString(parameters, self.OUTPUT, context)
 
-        sph_path = os.path.split(sph_executable())[0]
-
-        feedback.pushInfo(self.tr("Copying input files…"))
-
-        file_name = os.path.split(problem_file)[1]
-        problem_file_name = os.path.join(sph_path, file_name)
-        shutil.copyfile(problem_file, problem_file_name)
-
-        file_name = os.path.split(data_file)[1]
-        data_file_name = os.path.join(sph_path, file_name)
-        shutil.copyfile(data_file, data_file_name)
-
-        file_name = os.path.split(points_file)[1]
-        points_file_name = os.path.join(sph_path, file_name)
-        shutil.copyfile(points_file, points_file_name)
-
-        file_name = os.path.split(dem.source())[1]
-        dem_file_name = os.path.join(sph_path, f"{os.path.splitext(file_name)[0]}.top")
-        #shutil.copyfile(dem, dem_file_name)
-        dem2top(dem, dem_file_name)
-
-        batch_file, input_file = generate_batch_file(os.path.splitext(file_name)[0])
+        feedback.pushInfo(self.tr("Copying files…"))
+        work_dir = copy_inputs(problem_file, data_file, points_file, dem)
+        batch_file = generate_batch_file(work_dir, "Frank")
 
         feedback.pushInfo(self.tr("Running SPH24…"))
         commands = ["wine", "cmd.exe", "/c", batch_file]
@@ -99,17 +80,13 @@ class CalculateLandslide(IadbAlgorithm):
         if not os.path.exists(output):
             os.mkdir(output)
 
-        file_name = os.path.splitext(file_name)[0]
         for name in ("post.msh", "post.res"):
-            output_name = os.path.join(sph_path, f"{file_name}.{name}")
+            output_name = os.path.join(work_dir, f"Frank.{name}")
             if os.path.exists(output_name):
                 shutil.copy(output_name, output)
 
         feedback.pushInfo(self.tr("Cleanup…"))
-        with os.scandir(sph_path) as it:
-            for i in it:
-                if i.is_file() and not i.name.lower() == "sph24.exe":
-                    os.remove(os.path.join(sph_path, i.name))
+        shutil.rmtree(work_dir)
 
         results = {self.OUTPUT: output}
         return results
