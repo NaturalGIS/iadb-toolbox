@@ -43,7 +43,7 @@ def sph_executable():
     return filePath if filePath is not None else "sph24"
 
 
-def execute(commands, feedback=None):
+def execute(commands, steps, feedback=None):
     if feedback is None:
         feedback = QgsProcessingFeedback()
 
@@ -64,7 +64,6 @@ def execute(commands, feedback=None):
         if onStdOut.buffer.endswith(("\n", "\r")):
             feedback.pushConsoleInfo(onStdOut.buffer.rstrip())
             onStdOut.buffer = ""
-            onStdOut.progress += 1
 
     onStdOut.progress = 0
     onStdOut.buffer = ""
