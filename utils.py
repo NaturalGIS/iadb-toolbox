@@ -43,7 +43,7 @@ def sph_executable():
     return filePath if filePath is not None else "sph24"
 
 
-def execute(commands, steps, feedback=None):
+def execute(commands, feedback=None):
     if feedback is None:
         feedback = QgsProcessingFeedback()
 

@@ -264,7 +264,7 @@ class CalculateLandslide(IadbAlgorithm):
 
         feedback.pushInfo(self.tr("Running SPH24…"))
         commands = ["wine", "cmd.exe", "/c", batch_file]
-        execute(commands, print_step, feedback)
+        execute(commands, feedback)
 
         feedback.pushInfo(self.tr("Copying output files…"))
         if not os.path.exists(output):
