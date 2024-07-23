@@ -253,7 +253,7 @@ class CalculateLandslide(IadbAlgorithm):
             "tanfi8": tanfi8,
         }
 
-        feedback.pushInfo(self.tr("Copying files…"))
+        feedback.pushInfo(self.tr("Preparing inputs…"))
         work_dir = copy_inputs(points_file, dem)
         generate_master_file(
             os.path.join(work_dir, f"{problem_name}.MASTER.DAT"), params
@@ -261,7 +261,7 @@ class CalculateLandslide(IadbAlgorithm):
         generate_data_file(os.path.join(work_dir, f"{problem_name}.DAT"), params)
         batch_file = generate_batch_file(work_dir, problem_name)
 
-        feedback.pushInfo(self.tr("Running SPH24…"))
+        feedback.pushInfo(self.tr("Running SPH model…"))
         commands = ["wine", "cmd.exe", "/c", batch_file]
         execute(commands, feedback)
 

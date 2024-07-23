@@ -19,7 +19,7 @@
 
 import os
 import shutil
-from tempfile import NamedTemporaryFile, mkdtemp
+from tempfile import mkdtemp
 
 from qgis.PyQt.QtCore import QProcess
 from qgis.core import (
