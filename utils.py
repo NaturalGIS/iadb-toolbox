@@ -180,7 +180,7 @@ def generate_data_file(file_name, params):
             "cgra   dens  cmanning  eros_Coef    nfrict     Tauy0   constK  visco   tanfi8  hfrict0    c11   tanfi0   .Bfact     hrelpw   Comp  \n"
         )
         f.write(
-            f" {params['c1_graw']}   {params['c2_dens']}   {params['c3_voelmy']}           {params['c4_hungr']}          {params['c5_fric']}         {params['c6_tauy']}     0.0     {params['c8_visco']}    {params['c9_tanfi']}    1.e-3     0.0     0.      0.0       0.0      0.001\n"
+            f" {params['cgra']}   {params['dens']}   {params['cmanning']}           {params['eros_coef']}          {params['nfrict']}         {params['tauy0']}     0.0     {params['visco']}    {params['tanfi8']}    1.e-3     0.0     0.      0.0       0.0      0.001\n"
         )
         f.write("K0\n")
         f.write("  0\n")
@@ -210,10 +210,10 @@ def dem2top(layer, file_path):
 
     with open(file_path, "w", encoding="utf-8") as f:
         f.write("ictop\n")
-        f.write("11\n")
-        f.write("np\tdeltx\n")
-        f.write(f"{pixel_count}\t{pixel_size}\n")
-        f.write("X Y Z\n")
+        f.write("  10\n")
+        f.write("  np      deltx\n")
+        f.write(f" {pixel_count}     {pixel_size}    \n")
+        f.write("Topo_x Topo_y Topo_z\n")
 
         y = 0
         for r in range(height, 0, -1):
@@ -231,5 +231,5 @@ def dem2top(layer, file_path):
 
             y += pixel_size
 
-        f.write("terrain\n")
-        f.write("0\n")
+        f.write("topo_props\n")
+        f.write("  0\n")

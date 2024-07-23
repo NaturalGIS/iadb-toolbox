@@ -51,14 +51,14 @@ class CalculateLandslide(IadbAlgorithm):
     PRINT_STEP = "PRINT_STEP"
 
     LAW_TYPE = "LAW_TYPE"
-    C1_GRAW = "C1_GRAW"
-    C2_DENS = "C2_DENS"
-    C3_VOELMY = "C3_VOELMY"
-    C4_HUNGR = "C4_HUNGR"
-    C5_FRIC = "C5_FRIC"
-    C6_TAUY = "C6_TAUY"
-    C8_VISCO = "C8_VISCO"
-    C9_TANFI = "C9_TANFI"
+    CGRA = "CGRA"
+    DENS = "DENS"
+    CMANNING = "CMANNING"
+    EROS_COEF = "EROS_COEF"
+    NFRICT = "NFRICT"
+    TAUY0 = "TAUY0"
+    VISCO = "VISCO"
+    TANFI8 = "TANFI8"
 
     POINTS = "POINTS"
     DEM = "DEM"
@@ -121,7 +121,7 @@ class CalculateLandslide(IadbAlgorithm):
         )
         self.addParameter(
             QgsProcessingParameterNumber(
-                self.C1_GRAW,
+                self.CGRA,
                 self.tr("Gravity acceleration"),
                 Qgis.ProcessingNumberParameterType.Double,
                 9.81,
@@ -131,7 +131,7 @@ class CalculateLandslide(IadbAlgorithm):
         )
         self.addParameter(
             QgsProcessingParameterNumber(
-                self.C2_DENS,
+                self.DENS,
                 self.tr("Density of the mixture"),
                 Qgis.ProcessingNumberParameterType.Integer,
                 2000,
@@ -141,7 +141,7 @@ class CalculateLandslide(IadbAlgorithm):
         )
         self.addParameter(
             QgsProcessingParameterNumber(
-                self.C3_VOELMY,
+                self.CMANNING,
                 self.tr("Voellmy’s coefficient of turbulent viscosity "),
                 Qgis.ProcessingNumberParameterType.Integer,
                 0,
@@ -151,7 +151,7 @@ class CalculateLandslide(IadbAlgorithm):
         )
         self.addParameter(
             QgsProcessingParameterNumber(
-                self.C4_HUNGR,
+                self.EROS_COEF,
                 self.tr("Erosion coefficient"),
                 Qgis.ProcessingNumberParameterType.Integer,
                 0,
@@ -161,7 +161,7 @@ class CalculateLandslide(IadbAlgorithm):
         )
         self.addParameter(
             QgsProcessingParameterNumber(
-                self.C5_FRIC,
+                self.NFRICT,
                 self.tr("Rheological type to calculate basal friction"),
                 Qgis.ProcessingNumberParameterType.Integer,
                 7,
@@ -171,7 +171,7 @@ class CalculateLandslide(IadbAlgorithm):
         )
         self.addParameter(
             QgsProcessingParameterNumber(
-                self.C6_TAUY,
+                self.TAUY0,
                 self.tr("Bingham fluids cohesion"),
                 Qgis.ProcessingNumberParameterType.Double,
                 0,
@@ -181,7 +181,7 @@ class CalculateLandslide(IadbAlgorithm):
         )
         self.addParameter(
             QgsProcessingParameterNumber(
-                self.C8_VISCO,
+                self.VISCO,
                 self.tr("Bingham fluids viscosity"),
                 Qgis.ProcessingNumberParameterType.Double,
                 0,
@@ -191,7 +191,7 @@ class CalculateLandslide(IadbAlgorithm):
         )
         self.addParameter(
             QgsProcessingParameterNumber(
-                self.C9_TANFI,
+                self.TANFI8,
                 self.tr("Tangents of the final friction angles"),
                 Qgis.ProcessingNumberParameterType.Double,
                 0.218,
@@ -220,16 +220,15 @@ class CalculateLandslide(IadbAlgorithm):
         print_step = self.parameterAsInt(parameters, self.PRINT_STEP, context)
 
         law_type = self.parameterAsInt(parameters, self.LAW_TYPE, context)
-        c1_graw = self.parameterAsInt(parameters, self.C1_GRAW, context)
-        c2_dens = self.parameterAsInt(parameters, self.C2_DENS, context)
-        c3_voelmy = self.parameterAsInt(parameters, self.C3_VOELMY, context)
-        c4_hungr = self.parameterAsInt(parameters, self.C4_HUNGR, context)
-        c5_fric = self.parameterAsInt(parameters, self.C5_FRIC, context)
-        c6_tauy = self.parameterAsInt(parameters, self.C6_TAUY, context)
-        c8_visco = self.parameterAsInt(parameters, self.C8_VISCO, context)
-        c9_tanfi = self.parameterAsInt(parameters, self.C9_TANFI, context)
+        cgra = self.parameterAsInt(parameters, self.CGRA, context)
+        dens = self.parameterAsInt(parameters, self.DENS, context)
+        cmanning = self.parameterAsInt(parameters, self.CMANNING, context)
+        eros_coef = self.parameterAsInt(parameters, self.EROS_COEF, context)
+        nfrict = self.parameterAsInt(parameters, self.NFRICT, context)
+        tauy0 = self.parameterAsInt(parameters, self.TAUY0, context)
+        visco = self.parameterAsInt(parameters, self.VISCO, context)
+        tanfi8 = self.parameterAsInt(parameters, self.TANFI8, context)
 
-        # data_file = self.parameterAsFile(parameters, self.DATA, context)
         points_file = self.parameterAsFile(parameters, self.POINTS, context)
 
         dem = self.parameterAsRasterLayer(parameters, self.DEM, context)
@@ -244,14 +243,14 @@ class CalculateLandslide(IadbAlgorithm):
             "time_end": time_end,
             "print_step": print_step,
             "law_type": law_type,
-            "c1_graw": c1_graw,
-            "c2_dens": c2_dens,
-            "c3_voelmy": c3_voelmy,
-            "c4_hungr": c4_hungr,
-            "c5_fric": c5_fric,
-            "c6_tauy": c6_tauy,
-            "c8_visco": c8_visco,
-            "c9_tanfi": c9_tanfi,
+            "cgra": cgra,
+            "dens": dens,
+            "cmanning": cmanning,
+            "eros_coef": eros_coef,
+            "nfrict": nfrict,
+            "tauy0": tauy0,
+            "visco": visco,
+            "tanfi8": tanfi8,
         }
 
         feedback.pushInfo(self.tr("Copying files…"))
