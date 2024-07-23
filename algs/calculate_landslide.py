@@ -81,7 +81,7 @@ class CalculateLandslide(IadbAlgorithm):
         self.addParameter(
             QgsProcessingParameterNumber(
                 self.DT,
-                self.tr("dt"),
+                self.tr("Analysis time step"),
                 Qgis.ProcessingNumberParameterType.Double,
                 0.1,
                 minValue=1e-3,
@@ -91,33 +91,114 @@ class CalculateLandslide(IadbAlgorithm):
         self.addParameter(
             QgsProcessingParameterNumber(
                 self.TIME_END,
-                self.tr("time_end"),
+                self.tr("Total analysis time"),
                 Qgis.ProcessingNumberParameterType.Integer,
-                120,
+                1000,
                 minValue=1,
-                maxValue=1000,
+                maxValue=10000,
             )
         )
         self.addParameter(
             QgsProcessingParameterNumber(
                 self.PRINT_STEP,
-                self.tr("print_step"),
+                self.tr("Number of steps to print"),
                 Qgis.ProcessingNumberParameterType.Integer,
-                10,
+                5,
                 minValue=1,
                 maxValue=100,
             )
         )
 
-        self.addParameter(QgsProcessingParameterNumber(self.LAW_TYPE, self.tr("law type"), Qgis.ProcessingNumberParameterType.Integer, 7, minValue=1, maxValue=10))
-        self.addParameter(QgsProcessingParameterNumber(self.C1_GRAW, self.tr("C1 graw"), Qgis.ProcessingNumberParameterType.Double, 9.81, minValue=1e-3, maxValue=10))
-        self.addParameter(QgsProcessingParameterNumber(self.C2_DENS, self.tr("C2 dens"), Qgis.ProcessingNumberParameterType.Integer, 2000, minValue=1, maxValue=10000))
-        self.addParameter(QgsProcessingParameterNumber(self.C3_VOELMY, self.tr("C3 voellmy"), Qgis.ProcessingNumberParameterType.Integer, 0, minValue=0, maxValue=100))
-        self.addParameter(QgsProcessingParameterNumber(self.C4_HUNGR, self.tr("C4 hungr"), Qgis.ProcessingNumberParameterType.Integer, 0, minValue=0, maxValue=100))
-        self.addParameter(QgsProcessingParameterNumber(self.C5_FRIC, self.tr("C5 fric"), Qgis.ProcessingNumberParameterType.Integer, 7, minValue=0, maxValue=100))
-        self.addParameter(QgsProcessingParameterNumber(self.C6_TAUY, self.tr("C6 tauy"), Qgis.ProcessingNumberParameterType.Double, 0, minValue=0, maxValue=100))
-        self.addParameter(QgsProcessingParameterNumber(self.C8_VISCO, self.tr("C8 visco"), Qgis.ProcessingNumberParameterType.Double, 0, minValue=0, maxValue=100))
-        self.addParameter(QgsProcessingParameterNumber(self.C9_TANFI, self.tr("C9 tanfi"), Qgis.ProcessingNumberParameterType.Double, 0.218, minValue=0, maxValue=1))
+        self.addParameter(
+            QgsProcessingParameterNumber(
+                self.LAW_TYPE,
+                self.tr("law type"),
+                Qgis.ProcessingNumberParameterType.Integer,
+                7,
+                minValue=1,
+                maxValue=10,
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterNumber(
+                self.C1_GRAW,
+                self.tr("Gravity acceleration"),
+                Qgis.ProcessingNumberParameterType.Double,
+                9.81,
+                minValue=1e-3,
+                maxValue=10,
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterNumber(
+                self.C2_DENS,
+                self.tr("Density of the mixture"),
+                Qgis.ProcessingNumberParameterType.Integer,
+                2000,
+                minValue=1000,
+                maxValue=3000,
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterNumber(
+                self.C3_VOELMY,
+                self.tr("Voellmy’s coefficient of turbulent viscosity "),
+                Qgis.ProcessingNumberParameterType.Integer,
+                0,
+                minValue=0,
+                maxValue=100,
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterNumber(
+                self.C4_HUNGR,
+                self.tr("Erosion coefficient"),
+                Qgis.ProcessingNumberParameterType.Integer,
+                0,
+                minValue=0,
+                maxValue=100,
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterNumber(
+                self.C5_FRIC,
+                self.tr("Rheological type to calculate basal friction"),
+                Qgis.ProcessingNumberParameterType.Integer,
+                7,
+                minValue=0,
+                maxValue=100,
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterNumber(
+                self.C6_TAUY,
+                self.tr("Bingham fluids cohesion"),
+                Qgis.ProcessingNumberParameterType.Double,
+                0,
+                minValue=0,
+                maxValue=100,
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterNumber(
+                self.C8_VISCO,
+                self.tr("Bingham fluids viscosity"),
+                Qgis.ProcessingNumberParameterType.Double,
+                0,
+                minValue=0,
+                maxValue=100,
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterNumber(
+                self.C9_TANFI,
+                self.tr("Tangents of the final friction angles"),
+                Qgis.ProcessingNumberParameterType.Double,
+                0.218,
+                minValue=1e-3,
+                maxValue=3.1415926,
+            )
+        )
 
         self.addParameter(
             QgsProcessingParameterFile(self.POINTS, self.tr("Points file"))
@@ -148,7 +229,7 @@ class CalculateLandslide(IadbAlgorithm):
         c8_visco = self.parameterAsInt(parameters, self.C8_VISCO, context)
         c9_tanfi = self.parameterAsInt(parameters, self.C9_TANFI, context)
 
-        #data_file = self.parameterAsFile(parameters, self.DATA, context)
+        # data_file = self.parameterAsFile(parameters, self.DATA, context)
         points_file = self.parameterAsFile(parameters, self.POINTS, context)
 
         dem = self.parameterAsRasterLayer(parameters, self.DEM, context)

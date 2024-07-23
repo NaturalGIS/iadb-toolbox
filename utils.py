@@ -176,8 +176,12 @@ def generate_data_file(file_name, params):
         f.write("   2       2     2    1         \n")
         f.write(" sum_den,  av_vel, virt_part , nor_dens  \n")
         f.write("    T         T      F            F       \n")
-        f.write(" cgra  dens  cmanning    4..    nfrict     Tauy0   constK  visco   tanfi8  hfrict0    c11   tanfi0   .Bfact     14..   15..Comp  end  \n")
-        f.write(f"  {params['c1_graw']}   {params['c2_dens']}  {params['c3_voelmy']}         {params['c4_hungr']}       {params['c5_fric']}         {params['c6_tauy']}     0.0     {params['c8_visco']}      {params['c9_tanfi']}    1.e-3     0.0   0.218      0.0     0.0      0.001\n")
+        f.write(
+            " cgra  dens  cmanning    4..    nfrict     Tauy0   constK  visco   tanfi8  hfrict0    c11   tanfi0   .Bfact     14..   15..Comp  end  \n"
+        )
+        f.write(
+            f"  {params['c1_graw']}   {params['c2_dens']}  {params['c3_voelmy']}         {params['c4_hungr']}       {params['c5_fric']}         {params['c6_tauy']}     0.0     {params['c8_visco']}      {params['c9_tanfi']}    1.e-3     0.0   0.218      0.0     0.0      0.001\n"
+        )
         f.write(" K0 activated?\n")
         f.write("  0\n")
         f.write(" icpwp \n")
@@ -186,8 +190,12 @@ def generate_data_file(file_name, params):
         f.write("  0\n")
         f.write("control points?\n")
         f.write("  0\n")
-        f.write("GID filter   1.hs  2.disp 3.v  4.Pw  5 eros   6..Z  7..hrel  8..hw  9..eta  10.. hs+hw  11 dumm   12...dumm\n")
-        f.write("               1      1    0    0      0        0        0       0       0     0          0          0\n")
+        f.write(
+            "GID filter   1.hs  2.disp 3.v  4.Pw  5 eros   6..Z  7..hrel  8..hw  9..eta  10.. hs+hw  11 dumm   12...dumm\n"
+        )
+        f.write(
+            "               1      1    0    0      0        0        0       0       0     0          0          0\n"
+        )
         f.write("T_change_to_W\n")
         f.write("  1.e+12    \n")
 
