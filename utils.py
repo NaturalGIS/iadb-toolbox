@@ -136,24 +136,24 @@ def generate_master_file(file_name, params):
     with open(file_name, "w", encoding="utf-8") as f:
         f.write("1\n")
         f.write(f"{params['problem_name']}\n")
-        f.write("if_sph if_gfl if_tgf\n")
+        f.write("if_sph if_gfl if_tgfsph     gfl  Monte-Carlo\n")
         f.write("  1      0      0 \n")
-        f.write("SPH_problem_type   SPH_t_integ_Alg\n")
+        f.write("problem_type   Integ_Alg \n")
         f.write("       1               4\n")
-        f.write("sph problem name\n")
+        f.write("file.dat\n")
         f.write(f"{params['problem_name']}\n")
         f.write("dt      time_end   maxtimesteps\n")
         f.write(f"{params['dt']}      {params['time_end']}       1000000\n")
         f.write("print_step   save_step  plot_step\n")
         f.write(
-            f"{params['print_step']}          {params['print_step']}       {params['print_step']}\n"
+            f"   {params['print_step']}          {params['print_step']}       {params['print_step']}\n"
         )
         f.write("dt_sph  ic_adapt    \n")
         f.write("0.1      1  \n")
-        f.write("Ntime curves     max pts in them   \n")
-        f.write("      0              6  \n")
-        f.write("ic_cases_win      ic_eros\n")
-        f.write("    0                0 \n")
+        f.write("time_curves      max_pts\n")
+        f.write("     0              6  \n")
+        f.write("cases_win      ic_eros\n")
+        f.write("   0              0 \n")
 
 
 def generate_data_file(file_name, params):
