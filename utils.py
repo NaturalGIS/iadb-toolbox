@@ -114,7 +114,8 @@ def generate_batch_file(problem_name: str, work_dir: str) -> str:
 
     Returns a full path to the generated script.
     """
-    input_file = os.path.join(work_dir, "files.txt")
+    input_file_name = "files.txt"
+    input_file = os.path.join(work_dir, input_file_name)
     with open(input_file, "w", encoding="utf-8") as f:
         for i in range(2):
             f.write(f"{problem_name}\n")
@@ -123,7 +124,7 @@ def generate_batch_file(problem_name: str, work_dir: str) -> str:
     with open(batch_file, "w", encoding="utf-8") as f:
         f.write("set CWDIR=%~dp0\n")
         f.write(f"cd {work_dir}\n")
-        f.write(f"SPH24.exe < files.txt\n")
+        f.write(f"SPH24.exe < {input_file_name}\n")
         f.write("cd %WDIR%\n")
 
     return batch_file
