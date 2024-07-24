@@ -26,6 +26,7 @@ from qgis.core import QgsProcessingProvider
 
 from processing.core.ProcessingConfig import ProcessingConfig, Setting
 
+from processing_iadb.algs.dem_to_top import DemToTop
 from processing_iadb.algs.sph_simple_mode import SphSimpleMode
 from processing_iadb.algs.sph_advanced_mode import SphAdvancedMode
 from processing_iadb.utils import PLUGIN_ROOT, SPH_EXECUTABLE, sph_executable
@@ -67,15 +68,12 @@ class IadbProvider(QgsProcessingProvider):
         ProcessingConfig.removeSetting(SPH_EXECUTABLE)
 
     def loadAlgorithms(self):
-        self.algs = [SphAdvancedMode(), SphSimpleMode()]
+        self.algs = [DemToTop(), SphAdvancedMode(), SphSimpleMode()]
         for a in self.algs:
             self.addAlgorithm(a)
 
     def supportsNonFileBasedOutput(self):
         return False
-
-    def supportedOutputRasterLayerExtensions(self):
-        return ["asc", "tif"]
 
     def tr(self, string):
         return QCoreApplication.translate(self.__class__.__name__, string)
