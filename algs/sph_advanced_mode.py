@@ -2,7 +2,7 @@
 
 """
 ***************************************************************************
-    calculate_landslide.py
+    sph_advanced_mode.py
     ---------------------
     Date                 : July 2024
     Copyright            : (C) 2024 by NaturalGIS
@@ -39,10 +39,11 @@ from processing_iadb.utils import (
     copy_inputs,
     generate_master_file,
     generate_data_file,
+    copy_outputs,
 )
 
 
-class CalculateLandslide(IadbAlgorithm):
+class SphAdvancedMode(IadbAlgorithm):
 
     PROBLEM_NAME = "PROBLEM_NAME"
 
@@ -66,10 +67,16 @@ class CalculateLandslide(IadbAlgorithm):
     OUTPUT = "OUTPUT"
 
     def name(self):
-        return "calculatelandslide"
+        return "sphadvancedmode"
 
     def displayName(self):
-        return self.tr("Calculate landslide")
+        return self.tr("SPH model (advanced mode)")
+
+    def group(self):
+        return self.tr("Modeling")
+
+    def groupId(self):
+        return "modeling"
 
     def __init__(self):
         super().__init__()
@@ -203,9 +210,7 @@ class CalculateLandslide(IadbAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(self.POINTS, self.tr("Points file"))
         )
-        self.addParameter(
-            QgsProcessingParameterRasterLayer(self.DEM, self.tr("DEM file"))
-        )
+        self.addParameter(QgsProcessingParameterRasterLayer(self.DEM, self.tr("DEM")))
         self.addParameter(
             QgsProcessingParameterFolderDestination(
                 self.OUTPUT, self.tr("Output folder")
@@ -254,28 +259,22 @@ class CalculateLandslide(IadbAlgorithm):
         }
 
         feedback.pushInfo(self.tr("Preparing inputs…"))
-        work_dir = copy_inputs(points_file, dem, problem_name)
+        work_dir = copy_inputs(problem_name, dem, points_file)
         generate_master_file(
             os.path.join(work_dir, f"{problem_name}.MASTER.DAT"), params
         )
         generate_data_file(os.path.join(work_dir, f"{problem_name}.DAT"), params)
-        batch_file = generate_batch_file(work_dir, problem_name)
+        batch_file = generate_batch_file(problem_name, work_dir)
 
         feedback.pushInfo(self.tr("Running SPH model…"))
         commands = ["wine", "cmd.exe", "/c", batch_file]
         execute(commands, feedback)
 
         feedback.pushInfo(self.tr("Copying output files…"))
-        if not os.path.exists(output):
-            os.mkdir(output)
-
-        for suffix in ("post.msh", "post.res"):
-            output_name = os.path.join(work_dir, f"{problem_name}.{suffix}")
-            if os.path.exists(output_name):
-                shutil.copy(output_name, output)
+        copy_outputs(work_dir, problem_name, output)
 
         feedback.pushInfo(self.tr("Cleanup…"))
-        #shutil.rmtree(work_dir)
+        shutil.rmtree(work_dir)
 
         results = {self.OUTPUT: output}
         return results

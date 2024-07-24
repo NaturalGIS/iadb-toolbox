@@ -26,7 +26,8 @@ from qgis.core import QgsProcessingProvider
 
 from processing.core.ProcessingConfig import ProcessingConfig, Setting
 
-from processing_iadb.algs.calculate_landslide import CalculateLandslide
+from processing_iadb.algs.sph_simple_mode import SphSimpleMode
+from processing_iadb.algs.sph_advanced_mode import SphAdvancedMode
 from processing_iadb.utils import PLUGIN_ROOT, SPH_EXECUTABLE, sph_executable
 
 
@@ -53,7 +54,7 @@ class IadbProvider(QgsProcessingProvider):
             Setting(
                 self.name(),
                 SPH_EXECUTABLE,
-                self.tr("Tool executable"),
+                self.tr("SPH executable"),
                 sph_executable(),
                 valuetype=Setting.FILE,
             )
@@ -66,7 +67,7 @@ class IadbProvider(QgsProcessingProvider):
         ProcessingConfig.removeSetting(SPH_EXECUTABLE)
 
     def loadAlgorithms(self):
-        self.algs = [CalculateLandslide()]
+        self.algs = [SphAdvancedMode(), SphSimpleMode()]
         for a in self.algs:
             self.addAlgorithm(a)
 

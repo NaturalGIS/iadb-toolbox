@@ -20,6 +20,7 @@
 import os
 import shutil
 from tempfile import mkdtemp
+from typing import Any
 
 from qgis.PyQt.QtCore import QProcess
 from qgis.core import (
@@ -27,6 +28,7 @@ from qgis.core import (
     QgsRectangle,
     QgsMessageLog,
     QgsRunProcess,
+    QgsRasterLayer,
     QgsBlockingProcess,
     QgsProcessingFeedback,
     QgsProcessingException,
@@ -38,12 +40,18 @@ PLUGIN_ROOT = os.path.dirname(__file__)
 SPH_EXECUTABLE = "SPH_EXECUTABLE"
 
 
-def sph_executable():
+def sph_executable() -> str:
+    """
+    Returns path to the SHP executable.
+    """
     filePath = ProcessingConfig.getSetting(SPH_EXECUTABLE)
     return filePath if filePath is not None else "sph24"
 
 
-def execute(commands, feedback=None):
+def execute(commands: list[str], feedback: QgsProcessingFeedback = None):
+    """
+    Executes SPH tool
+    """
     if feedback is None:
         feedback = QgsProcessingFeedback()
 
@@ -53,7 +61,7 @@ def execute(commands, feedback=None):
     feedback.pushCommandInfo(fused_command)
     feedback.pushInfo("SPH output:")
 
-    def onStdOut(ba):
+    def onStdOut(ba: bytes):
         val = ba.data().decode("utf-8")
         if "%" in val:
             onStdOut.progress = int(progressRegex.search(val).group(0))
@@ -68,7 +76,7 @@ def execute(commands, feedback=None):
     onStdOut.progress = 0
     onStdOut.buffer = ""
 
-    def onStdErr(ba):
+    def onStdErr(ba: bytes):
         val = ba.data().decode("utf-8")
         onStdErr.buffer += val
 
@@ -100,37 +108,65 @@ def execute(commands, feedback=None):
         feedback.reportError("Process returned error code {}".format(res))
 
 
-def generate_batch_file(work_dir, name):
+def generate_batch_file(problem_name: str, work_dir: str) -> str:
+    """
+    Generates script to run SPH tool.
+
+    Returns a full path to the generated script.
+    """
     input_file = os.path.join(work_dir, "files.txt")
     with open(input_file, "w", encoding="utf-8") as f:
         for i in range(2):
-            f.write(f"{name}\n")
+            f.write(f"{problem_name}\n")
 
-    batch_file = os.path.join(work_dir, f"{name}.bat")
+    batch_file = os.path.join(work_dir, f"{problem_name}.bat")
     with open(batch_file, "w", encoding="utf-8") as f:
         f.write("set CWDIR=%~dp0\n")
         f.write(f"cd {work_dir}\n")
-        f.write(f"{sph_executable()} < {input_file}\n")
+        f.write(f"SPH24.exe < files.txt\n")
         f.write("cd %WDIR%\n")
 
     return batch_file
 
 
-def copy_inputs(points_file, dem, problem_name):
+def copy_inputs(
+    problem_name: str,
+    dem: str,
+    pts_file: str,
+    master_file: str | None = None,
+    config_file: str | None = None,
+) -> str:
+    """
+    Copies SPH executable and input files into a separate directory to create an
+    environment for performing analysis.
+
+    Returns full path to the created directory.
+    """
     work_dir = mkdtemp(prefix=f"sph-")
 
     shutil.copy(sph_executable(), work_dir)
 
-    points_file_name = os.path.join(work_dir, f"{problem_name}.pts")
-    shutil.copyfile(points_file, points_file_name)
+    new_path = os.path.join(work_dir, f"{problem_name}.top")
+    dem2top(dem, new_path)
 
-    dem_file_name = os.path.join(work_dir, f"{problem_name}.top")
-    dem2top(dem, dem_file_name)
+    new_path = os.path.join(work_dir, f"{problem_name}.pts")
+    shutil.copyfile(pts_file, new_path)
+
+    if master_file is not None:
+        new_path = os.path.join(work_dir, f"{problem_name}.master.dat")
+        shutil.copyfile(master_file, new_path)
+
+    if config_file is not None:
+        new_path = os.path.join(work_dir, f"{problem_name}.dat")
+        shutil.copyfile(config_file, new_path)
 
     return work_dir
 
 
-def generate_master_file(file_name, params):
+def generate_master_file(file_name: str, params: dict[str, Any]):
+    """
+    Generates configuration file with the model inputs and generic parameters.
+    """
     with open(file_name, "w", encoding="utf-8") as f:
         f.write("1\n")
         f.write(f"{params['problem_name']}\n")
@@ -154,7 +190,10 @@ def generate_master_file(file_name, params):
         f.write("   0              0 \n")
 
 
-def generate_data_file(file_name, params):
+def generate_data_file(file_name: str, params: dict[str, Any]):
+    """
+    Generates configuration file with specific model parameters.
+    """
     with open(file_name, "w", encoding="utf-8") as f:
         f.write("  1\n")
         f.write(f"{params['problem_name']}\n")
@@ -198,7 +237,14 @@ def generate_data_file(file_name, params):
         f.write("  1.e+12    \n")
 
 
-def dem2top(layer, file_path):
+def dem2top(layer: QgsRasterLayer, file_path: str):
+    """
+    Converts a single-band raster layer representing DEM to a text format (.top)
+    required by SPH tool.
+
+    The .top format is basically a raster in the XYZ format with the custom
+    header and footer.
+    """
     provider = layer.dataProvider()
     width = provider.xSize()
     height = provider.ySize()
@@ -214,7 +260,6 @@ def dem2top(layer, file_path):
         f.write("Topo_x Topo_y Topo_z\n")
 
         for row in range(height):
-            print("process row", row)
             x_min = extent.xMinimum()
             x_max = extent.xMaximum()
             y_min = extent.yMaximum() - row * pixel_size
@@ -223,9 +268,22 @@ def dem2top(layer, file_path):
             block = provider.block(1, block_extent, width, height, None)
 
             for col in range(width):
-                x = extent.xMinimum() + ( col + 0.5 ) * pixel_size
-                y = extent.yMaximum() - ( row + 0.5 ) * pixel_size
+                x = extent.xMinimum() + (col + 0.5) * pixel_size
+                y = extent.yMaximum() - (row + 0.5) * pixel_size
                 f.write(f"{x}\t{y}\t{block.value(row, col)}\n")
 
         f.write("topo_props\n")
         f.write("  0\n")
+
+
+def copy_outputs(work_dir: str, problem_name: str, output_dir: str):
+    """
+    Copies output files produced by the SPH tool to the output directory.
+    """
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+
+    for suffix in ("post.msh", "post.res"):
+        output_name = os.path.join(work_dir, f"{problem_name}.{suffix}")
+        if os.path.exists(output_name):
+            shutil.copy(output_name, output_dir)
