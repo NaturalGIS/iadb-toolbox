@@ -254,7 +254,7 @@ class CalculateLandslide(IadbAlgorithm):
         }
 
         feedback.pushInfo(self.tr("Preparing inputs…"))
-        work_dir = copy_inputs(points_file, dem)
+        work_dir = copy_inputs(points_file, dem, problem_name)
         generate_master_file(
             os.path.join(work_dir, f"{problem_name}.MASTER.DAT"), params
         )
@@ -275,7 +275,7 @@ class CalculateLandslide(IadbAlgorithm):
                 shutil.copy(output_name, output)
 
         feedback.pushInfo(self.tr("Cleanup…"))
-        shutil.rmtree(work_dir)
+        #shutil.rmtree(work_dir)
 
         results = {self.OUTPUT: output}
         return results

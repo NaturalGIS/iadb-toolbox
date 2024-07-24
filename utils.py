@@ -116,17 +116,15 @@ def generate_batch_file(work_dir, name):
     return batch_file
 
 
-def copy_inputs(points_file, dem):
-    work_dir = mkdtemp(prefix="sph-")
+def copy_inputs(points_file, dem, problem_name):
+    work_dir = mkdtemp(prefix=f"sph-")
 
     shutil.copy(sph_executable(), work_dir)
 
-    file_name = os.path.split(points_file)[1]
-    points_file_name = os.path.join(work_dir, file_name)
+    points_file_name = os.path.join(work_dir, f"{problem_name}.pts")
     shutil.copyfile(points_file, points_file_name)
 
-    file_name = os.path.split(dem.source())[1]
-    dem_file_name = os.path.join(work_dir, f"{os.path.splitext(file_name)[0]}.top")
+    dem_file_name = os.path.join(work_dir, f"{problem_name}.top")
     dem2top(dem, dem_file_name)
 
     return work_dir
@@ -215,21 +213,19 @@ def dem2top(layer, file_path):
         f.write(f" {pixel_count}     {pixel_size}    \n")
         f.write("Topo_x Topo_y Topo_z\n")
 
-        y = 0
-        for r in range(height, 0, -1):
+        for row in range(height):
+            print("process row", row)
             x_min = extent.xMinimum()
             x_max = extent.xMaximum()
-            y_min = extent.yMaximum() - (r - 1) * pixel_size
-            y_max = extent.yMaximum() - r * pixel_size
+            y_min = extent.yMaximum() - row * pixel_size
+            y_max = extent.yMaximum() - (row + 1) * pixel_size
             block_extent = QgsRectangle(x_min, y_min, x_max, y_max)
             block = provider.block(1, block_extent, width, height, None)
 
-            x = 0
-            for i in range(block.width()):
-                f.write(f"{x}\t{y}\t{block.value(0, i)}\n")
-                x += pixel_size
-
-            y += pixel_size
+            for col in range(width):
+                x = extent.xMinimum() + ( col + 0.5 ) * pixel_size
+                y = extent.yMaximum() - ( row + 0.5 ) * pixel_size
+                f.write(f"{x}\t{y}\t{block.value(row, col)}\n")
 
         f.write("topo_props\n")
         f.write("  0\n")
