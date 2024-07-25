@@ -1,5 +1,5 @@
 [general]
-name=IADB Toolbox
+name=Disaster Risk Management IADB Toolbox
 description=A Processing provider that allows to use SPH tool to analyse landslides.
 about=
 category=Plugins
