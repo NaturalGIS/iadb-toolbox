@@ -61,7 +61,9 @@ class DemToTop(IadbAlgorithm):
     def processAlgorithm(self, parameters, context, feedback):
         dem = self.parameterAsRasterLayer(parameters, self.INPUT, context)
         if dem is None:
-            raise QgsProcessingException(self.invalidRasterError(parameters, self.INPUT))
+            raise QgsProcessingException(
+                self.invalidRasterError(parameters, self.INPUT)
+            )
 
         output = self.parameterAsFileOutput(parameters, self.OUTPUT, context)
 

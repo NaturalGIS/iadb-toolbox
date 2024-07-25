@@ -171,14 +171,14 @@ def generate_master_file(file_name: str, params: dict[str, Any]):
     with open(file_name, "w", encoding="utf-8") as f:
         f.write("1\n")
         f.write(f"{params['problem_name']}\n")
-        f.write("if_sph if_gfl if_tgfsph     gfl  Monte-Carlo\n")
+        f.write("sph     gfl  Monte-Carlo\n")
         f.write("  1      0      0 \n")
         f.write("problem_type   Integ_Alg \n")
         f.write("       1               4\n")
         f.write("file.dat\n")
         f.write(f"{params['problem_name']}\n")
         f.write("dt      time_end   maxtimesteps\n")
-        f.write(f"{params['dt']}      {params['time_end']}       1000000\n")
+        f.write(f"{params['dt']}      {params['time_end']}          1000000\n")
         f.write("print_step   save_step  plot_step\n")
         f.write(
             f"   {params['print_step']}          {params['print_step']}       {params['print_step']}\n"
@@ -209,7 +209,7 @@ def generate_data_file(file_name: str, params: dict[str, Any]):
         f.write("icunk     h_inf_SW  \n")
         f.write("  6         0.1\n")
         f.write("file.pts\n")
-        f.write(f"{params['problem_name']}\n")
+        f.write(f"  {params['problem_name']}\n")
         f.write("pa_sph,  nnps, sle, skf \n")
         f.write("  2       2     1    1         \n")
         f.write("sum_den,  av_vel, virt_part , nor_dens  \n")

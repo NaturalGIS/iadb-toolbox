@@ -51,7 +51,6 @@ class SphAdvancedMode(IadbAlgorithm):
     TIME_END = "TIME_END"
     PRINT_STEP = "PRINT_STEP"
 
-    LAW_TYPE = "LAW_TYPE"
     CGRA = "CGRA"
     DENS = "DENS"
     CMANNING = "CMANNING"
@@ -116,16 +115,6 @@ class SphAdvancedMode(IadbAlgorithm):
             )
         )
 
-        self.addParameter(
-            QgsProcessingParameterNumber(
-                self.LAW_TYPE,
-                self.tr("law type"),
-                Qgis.ProcessingNumberParameterType.Integer,
-                7,
-                minValue=1,
-                maxValue=10,
-            )
-        )
         self.addParameter(
             QgsProcessingParameterNumber(
                 self.CGRA,
@@ -224,7 +213,6 @@ class SphAdvancedMode(IadbAlgorithm):
         time_end = self.parameterAsInt(parameters, self.TIME_END, context)
         print_step = self.parameterAsInt(parameters, self.PRINT_STEP, context)
 
-        law_type = self.parameterAsInt(parameters, self.LAW_TYPE, context)
         cgra = self.parameterAsInt(parameters, self.CGRA, context)
         dens = self.parameterAsInt(parameters, self.DENS, context)
         cmanning = self.parameterAsInt(parameters, self.CMANNING, context)
@@ -247,7 +235,6 @@ class SphAdvancedMode(IadbAlgorithm):
             "dt": dt,
             "time_end": time_end,
             "print_step": print_step,
-            "law_type": law_type,
             "cgra": cgra,
             "dens": dens,
             "cmanning": cmanning,
