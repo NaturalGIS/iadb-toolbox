@@ -1,0 +1,18 @@
+1
+frank
+sph     gfl  Monte-Carlo
+  1      0      0 
+problem_type   Integ_Alg 
+       1               4
+file.dat
+frank
+dt      time_end   maxtimesteps
+0.1      80          1000000
+print_step   save_step  plot_step
+   25          25       25
+dt_sph  ic_adapt    
+0.1      1  
+time_curves      max_pts
+     0              6  
+cases_win      ic_eros
+   0              0 

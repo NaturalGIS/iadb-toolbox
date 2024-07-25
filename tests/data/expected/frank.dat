@@ -1,0 +1,32 @@
+  1
+frank
+SWalg
+  0
+nhist
+  0
+ndimn
+   2
+soil  water  vps  ic_abs
+ 1      0     0     0
+icunk     h_inf_SW  
+  6         0.1
+file.pts
+  frank
+pa_sph,  nnps, sle, skf 
+  2       2     1    1         
+sum_den,  av_vel, virt_part , nor_dens  
+   T         T      F            F       
+cgra   dens  cmanning  eros_Coef    nfrict     Tauy0   constK  visco   tanfi8  hfrict0    c11   tanfi0   .Bfact     hrelpw   Comp  
+ 9.8   2000.0   0           0          7         0.0     0.0     0.0    0.218    1.e-3     0.0     0.      0.0       0.0      0.001
+K0
+  0
+icpwp 
+  0
+coarse
+  0
+chk_pts
+  0
+Gid_Mask_SW   1.hs  2.disp 3.v  4.Pwb  5 eros   6.Z  7.hrel  8.hw  9.eta  10.hs+hw  11.hsat   12.Pw
+               1      1    0    0      0        0        0       0       0     0       0          0
+T_change_to_W
+  1.e+12    
