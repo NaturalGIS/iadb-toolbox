@@ -1,4 +1,4 @@
-PLUGIN_NAME=processing_iadb
+PLUGIN_NAME=iadb_toolbox
 
 LANG_PATH=i18n
 LANG_SOURCES=$(wildcard $(LANG_PATH)/*.ts)

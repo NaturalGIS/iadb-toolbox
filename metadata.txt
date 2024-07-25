@@ -1,20 +1,20 @@
 [general]
-name=IADB Processing provider
-description=
+name=IADB Toolbox
+description=A Processing provider that allows to use SPH tool to analyse landslides.
 about=
 category=Plugins
 version=1.0.0
-qgisMinimumVersion=3.22
+qgisMinimumVersion=3.34
 
 icon=icons/iadb.svg
-tags=analysis,processing
+tags=analysis,processing,landslide
 
 author=NaturalGIS
 email=info@naturalgis.pt
 
-homepage=
-tracker=
-repository=
+homepage=https://github.com/NaturalGIS/iadb-toolbox
+tracker=https://github.com/NaturalGIS/iadb-toolbox/issues
+repository=https://github.com/NaturalGIS/iadb-toolbox
 
 hasProcessingProvider=yes
 

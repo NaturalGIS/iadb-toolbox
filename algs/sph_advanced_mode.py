@@ -32,8 +32,8 @@ from qgis.core import (
 
 from processing.core.ProcessingConfig import ProcessingConfig
 
-from processing_iadb.algorithm import IadbAlgorithm
-from processing_iadb.utils import (
+from iadb_toolbox.algorithm import IadbAlgorithm
+from iadb_toolbox.utils import (
     generate_batch_file,
     execute,
     copy_inputs,

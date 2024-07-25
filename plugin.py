@@ -22,14 +22,14 @@ import os
 from qgis.PyQt.QtCore import QCoreApplication, QTranslator
 from qgis.core import QgsApplication
 
-from processing_iadb.provider import IadbProvider
-from processing_iadb.utils import PLUGIN_ROOT
+from iadb_toolbox.provider import IadbProvider
+from iadb_toolbox.utils import PLUGIN_ROOT
 
 
 class IadbPlugin:
     def __init__(self, iface):
         locale = QgsApplication.locale()
-        qm_path = os.path.join(PLUGIN_ROOT, "i18n", f"processing_iadb_{locale}.qm")
+        qm_path = os.path.join(PLUGIN_ROOT, "i18n", f"iadb_toolbox_{locale}.qm")
 
         if os.path.exists(qm_path):
             self.translator = QTranslator()

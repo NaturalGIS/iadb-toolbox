@@ -17,7 +17,7 @@
 ***************************************************************************
 """
 
-from processing_iadb.plugin import IadbPlugin
+from iadb_toolbox.plugin import IadbPlugin
 
 
 def classFactory(iface):

@@ -26,7 +26,7 @@ from qgis.core import (
 )
 from qgis.testing import start_app, QgisTestCase
 
-from processing_iadb.utils import (
+from iadb_toolbox.utils import (
     dem2top,
     generate_master_file,
     generate_data_file,

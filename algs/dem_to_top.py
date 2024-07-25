@@ -26,8 +26,8 @@ from qgis.core import (
     QgsProcessingParameterFileDestination,
 )
 
-from processing_iadb.algorithm import IadbAlgorithm
-from processing_iadb.utils import dem2top
+from iadb_toolbox.algorithm import IadbAlgorithm
+from iadb_toolbox.utils import dem2top
 
 
 class DemToTop(IadbAlgorithm):

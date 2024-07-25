@@ -4,4 +4,4 @@ SOURCES = __init__.py \
           algorithm.py \
           utils.py
 
-TRANSLATIONS = i18n/processing_iadb_pt.ts
+TRANSLATIONS = i18n/iadb_toolbox_pt.ts

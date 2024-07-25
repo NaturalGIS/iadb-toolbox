@@ -23,7 +23,7 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtCore import QCoreApplication
 
 from qgis.core import QgsProcessingAlgorithm
-from processing_iadb.utils import PLUGIN_ROOT
+from iadb_toolbox.utils import PLUGIN_ROOT
 
 
 class IadbAlgorithm(QgsProcessingAlgorithm):

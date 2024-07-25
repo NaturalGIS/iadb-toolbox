@@ -26,10 +26,10 @@ from qgis.core import QgsProcessingProvider
 
 from processing.core.ProcessingConfig import ProcessingConfig, Setting
 
-from processing_iadb.algs.dem_to_top import DemToTop
-from processing_iadb.algs.sph_simple_mode import SphSimpleMode
-from processing_iadb.algs.sph_advanced_mode import SphAdvancedMode
-from processing_iadb.utils import PLUGIN_ROOT, SPH_EXECUTABLE, sph_executable
+from iadb_toolbox.algs.dem_to_top import DemToTop
+from iadb_toolbox.algs.sph_simple_mode import SphSimpleMode
+from iadb_toolbox.algs.sph_advanced_mode import SphAdvancedMode
+from iadb_toolbox.utils import PLUGIN_ROOT, SPH_EXECUTABLE, sph_executable
 
 
 class IadbProvider(QgsProcessingProvider):
