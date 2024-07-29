@@ -284,7 +284,7 @@ def copy_outputs(work_dir: str, problem_name: str, output_dir: str):
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    for suffix in ("post.msh", "post.res"):
+    for suffix in ("post.msh", "post.res", "QGIS_res"):
         output_name = os.path.join(work_dir, f"{problem_name}.{suffix}")
         if os.path.exists(output_name):
             shutil.copy(output_name, output_dir)
