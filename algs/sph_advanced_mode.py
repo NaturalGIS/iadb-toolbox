@@ -40,6 +40,7 @@ from iadb_toolbox.utils import (
     generate_master_file,
     generate_data_file,
     copy_outputs,
+    res2raster,
 )
 
 
@@ -259,6 +260,9 @@ class SphAdvancedMode(IadbAlgorithm):
 
         feedback.pushInfo(self.tr("Copying output files…"))
         copy_outputs(work_dir, problem_name, output)
+
+        feedback.pushInfo(self.tr("Converting output to GeoTiff…"))
+        res2raster(problem_name, output, dem)
 
         feedback.pushInfo(self.tr("Cleanup…"))
         shutil.rmtree(work_dir)

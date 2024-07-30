@@ -18,7 +18,10 @@
 """
 
 import os
+import math
 import shutil
+from itertools import groupby
+from operator import itemgetter
 from tempfile import mkdtemp
 from typing import Any
 
@@ -32,6 +35,8 @@ from qgis.core import (
     QgsBlockingProcess,
     QgsProcessingFeedback,
     QgsProcessingException,
+    QgsRasterFileWriter,
+    QgsRasterBlock,
 )
 from processing.core.ProcessingConfig import ProcessingConfig
 
@@ -288,3 +293,73 @@ def copy_outputs(work_dir: str, problem_name: str, output_dir: str):
         output_name = os.path.join(work_dir, f"{problem_name}.{suffix}")
         if os.path.exists(output_name):
             shutil.copy(output_name, output_dir)
+
+
+def res2raster(problem_name: str, dir_name: str, layer: QgsRasterLayer):
+    """
+    COnverts QGIS_res file produced by SPH to a set of rasters.
+    """
+
+    pixel_size = layer.rasterUnitsPerPixelX()
+    extent = layer.extent()
+    crs = layer.crs()
+
+    provider = layer.dataProvider()
+    width = provider.xSize()
+    height = provider.ySize()
+    nodata = provider.sourceNoDataValue(1)
+    data_type = provider.dataType(1)
+
+    file_name = os.path.join(dir_name, f"{problem_name}.QGIS_res")
+    with open(file_name) as f:
+        data = []
+        time = None
+        prev_time = None
+        block_read = False
+
+        for line in f:
+            line = line.strip()
+            if line.startswith("time"):
+                if time is not None:
+                    prev_time = time
+                    block_read = True
+
+                time = float(line.split()[3])
+                continue
+
+            if block_read:
+                data = sorted(data, key=itemgetter(1))
+                values = groupby(data, itemgetter(1))
+                groups = {}
+                for k, v in values:
+                    groups[k] = list(v)
+
+                output_format = QgsRasterFileWriter.driverForExtension("tif")
+                fp = os.path.join(dir_name, f"{problem_name}-{time}.tif")
+                writer = QgsRasterFileWriter(fp)
+                writer.setOutputProviderKey("gdal")
+                writer.setOutputFormat(output_format)
+                out_provider = writer.createOneBandRaster(
+                    data_type, width, height, extent, crs
+                )
+                out_provider.setEditable(True)
+                out_provider.setNoDataValue(1, nodata)
+
+                block = QgsRasterBlock(data_type, width, 1)
+                block.setNoDataValue(nodata)
+
+                for row in range(height):
+                    block.setIsNoData()
+                    y = extent.yMaximum() - (row + 0.5) * pixel_size
+                    if y in groups.keys():
+                        for i in groups[y]:
+                            col = math.trunc((i[0] - extent.xMinimum()) / pixel_size)
+                            block.setValue(0, col, i[2])
+                    out_provider.setEditable(True)
+                    out_provider.writeBlock(block, 1, 0, row)
+
+                data[:] = []
+                block_read = False
+
+            values = [float(v) for v in line.split()]
+            data.append(values)
