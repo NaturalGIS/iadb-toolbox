@@ -24,6 +24,12 @@ from itertools import groupby
 from operator import itemgetter
 from tempfile import mkdtemp
 from typing import Any
+from datetime import datetime, timedelta
+
+from netCDF4 import Dataset
+from cftime import date2num
+
+import numpy
 
 from qgis.PyQt.QtCore import QProcess
 from qgis.core import (
@@ -297,7 +303,7 @@ def copy_outputs(work_dir: str, problem_name: str, output_dir: str):
 
 def res2raster(problem_name: str, dir_name: str, layer: QgsRasterLayer):
     """
-    COnverts QGIS_res file produced by SPH to a set of rasters.
+    COnverts QGIS_res file produced by SPH to a netCDF4 format.
     """
 
     pixel_size = layer.rasterUnitsPerPixelX()
@@ -305,26 +311,125 @@ def res2raster(problem_name: str, dir_name: str, layer: QgsRasterLayer):
     crs = layer.crs()
 
     provider = layer.dataProvider()
-    width = provider.xSize()
-    height = provider.ySize()
-    nodata = provider.sourceNoDataValue(1)
-    data_type = provider.dataType(1)
+    raster_width = provider.xSize()
+    raster_height = provider.ySize()
+
+    date = datetime.now()
+
+    file_name = os.path.join(dir_name, f"{problem_name}.nc")
+    ds = Dataset(file_name, "w", format="NETCDF4", clobber=True)
+    ds.description = "Landslide model"
+    ds.history = f"Created {date.ctime()}"
+    ds.source = "IADB Toolbox QGIS plugin"
+
+    lat = ds.createDimension("latitude", raster_height)
+    lon = ds.createDimension("longitude", raster_width)
+    time = ds.createDimension("time", None)
+
+    latitude = ds.createVariable("latitude", "f8", ("latitude",), fill_value=-9999)
+    latitude.units = "degrees north"
+    latitude.long_name = "latitude"
+    latitude.standard_name = "latitude"
+    latitude.grid_mapping = "spatial_ref"
+
+    longitude = ds.createVariable("longitude", "f8", ("longitude",), fill_value=-9999)
+    longitude.units = "degrees east"
+    longitude.long_name = "longitude"
+    longitude.standard_name = "longitude"
+    latitude.grid_mapping = "spatial_ref"
+
+    grid_mapping = ds.createVariable("spatial_ref", "i8")
+    grid_mapping.crs_wkt = crs.toWkt()
+    grid_mapping.spatial_ref = crs.toWkt()
+    grid_mapping.geographic_crs_name = crs.description()
+    grid_mapping.grid_mapping_name = "latitude_longitude"
+
+    time = ds.createVariable(
+        "time",
+        "i8",
+        ("time",),
+    )
+    time.units = (
+        f"seconds since {datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f %z').strip()}"
+    )
+    time.calendar = "gregorian"
+    time.long_name = "time"
+
+    height = ds.createVariable(
+        "Height",
+        "f8",
+        (
+            "time",
+            "latitude",
+            "longitude",
+        ),
+        fill_value=-9999,
+    )
+    height.units = "m"
+    height.positive = "up"
+
+    vx = ds.createVariable(
+        "Vx",
+        "f8",
+        (
+            "time",
+            "latitude",
+            "longitude",
+        ),
+        fill_value=-9999,
+    )
+    vy = ds.createVariable(
+        "Vy",
+        "f8",
+        (
+            "time",
+            "latitude",
+            "longitude",
+        ),
+        fill_value=-9999,
+    )
+    vavg = ds.createVariable(
+        "Vavg",
+        "f8",
+        (
+            "time",
+            "latitude",
+            "longitude",
+        ),
+        fill_value=-9999,
+    )
+
+    for row in range(raster_height):
+        y = extent.yMaximum() - (row + 0.5) * pixel_size
+        latitude[row] = y
+
+    for col in range(raster_width):
+        x = extent.xMinimum() + (col + 0.5) * pixel_size
+        longitude[col] = x
+
+    data = []
+    dates = [date]
+    h = numpy.full((raster_width, raster_height), -9999)
+    v_x = numpy.full((raster_width, raster_height), -9999)
+    v_y = numpy.full((raster_width, raster_height), -9999)
+    v_avg = numpy.full((raster_width, raster_height), -9999)
+    c = 0
 
     file_name = os.path.join(dir_name, f"{problem_name}.QGIS_res")
     with open(file_name) as f:
-        data = []
-        time = None
+        sph_time = None
         prev_time = None
         block_read = False
 
         for line in f:
             line = line.strip()
             if line.startswith("time"):
-                if time is not None:
-                    prev_time = time
+                if sph_time is not None:
+                    prev_time = sph_time
                     block_read = True
 
-                time = float(line.split()[3])
+                sph_time = float(line.split()[3])
+                dates.append(date + timedelta(seconds=sph_time))
                 continue
 
             if block_read:
@@ -334,32 +439,33 @@ def res2raster(problem_name: str, dir_name: str, layer: QgsRasterLayer):
                 for k, v in values:
                     groups[k] = list(v)
 
-                output_format = QgsRasterFileWriter.driverForExtension("tif")
-                fp = os.path.join(dir_name, f"{problem_name}-{time}.tif")
-                writer = QgsRasterFileWriter(fp)
-                writer.setOutputProviderKey("gdal")
-                writer.setOutputFormat(output_format)
-                out_provider = writer.createOneBandRaster(
-                    data_type, width, height, extent, crs
-                )
-                out_provider.setEditable(True)
-                out_provider.setNoDataValue(1, nodata)
-
-                block = QgsRasterBlock(data_type, width, 1)
-                block.setNoDataValue(nodata)
-
-                for row in range(height):
-                    block.setIsNoData()
+                for row in range(raster_height):
                     y = extent.yMaximum() - (row + 0.5) * pixel_size
                     if y in groups.keys():
                         for i in groups[y]:
                             col = math.trunc((i[0] - extent.xMinimum()) / pixel_size)
-                            block.setValue(0, col, i[2])
-                    out_provider.setEditable(True)
-                    out_provider.writeBlock(block, 1, 0, row)
+                            h[row, col] = i[2]
+                            v_x[row, col] = i[3]
+                            v_y[row, col] = i[4]
+                            v_avg[row, col] = i[5]
 
+                c += 1
                 data[:] = []
+
+                height[c, :, :] = h
+                vx[c, :, :] = v_x
+                vy[c, :, :] = v_y
+                vavg[c, :, :] = v_avg
+
+                h = numpy.full((raster_width, raster_height), -9999)
+                v_x = numpy.full((raster_width, raster_height), -9999)
+                v_y = numpy.full((raster_width, raster_height), -9999)
+                v_avg = numpy.full((raster_width, raster_height), -9999)
                 block_read = False
 
             values = [float(v) for v in line.split()]
             data.append(values)
+
+    time[:] = date2num(dates, units=time.units, calendar=time.calendar)
+
+    ds.close()
