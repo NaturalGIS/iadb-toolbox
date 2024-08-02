@@ -301,23 +301,22 @@ def copy_outputs(work_dir: str, problem_name: str, output_dir: str):
             shutil.copy(output_name, output_dir)
 
 
-def res2raster(problem_name: str, dir_name: str, layer: QgsRasterLayer):
+def res2netcdf(res_file: str, dem: QgsRasterLayer, output: str):
     """
     COnverts QGIS_res file produced by SPH to a netCDF4 format.
     """
 
-    pixel_size = layer.rasterUnitsPerPixelX()
-    extent = layer.extent()
-    crs = layer.crs()
+    pixel_size = dem.rasterUnitsPerPixelX()
+    extent = dem.extent()
+    crs = dem.crs()
 
-    provider = layer.dataProvider()
+    provider = dem.dataProvider()
     raster_width = provider.xSize()
     raster_height = provider.ySize()
 
     date = datetime.now()
 
-    file_name = os.path.join(dir_name, f"{problem_name}.nc")
-    ds = Dataset(file_name, "w", format="NETCDF4", clobber=True)
+    ds = Dataset(output, "w", format="NETCDF4", clobber=True)
     ds.description = "Landslide model"
     ds.history = f"Created {date.ctime()}"
     ds.source = "IADB Toolbox QGIS plugin"
@@ -415,8 +414,7 @@ def res2raster(problem_name: str, dir_name: str, layer: QgsRasterLayer):
     v_avg = numpy.full((raster_width, raster_height), -9999)
     c = 0
 
-    file_name = os.path.join(dir_name, f"{problem_name}.QGIS_res")
-    with open(file_name) as f:
+    with open(res_file) as f:
         sph_time = None
         prev_time = None
         block_read = False

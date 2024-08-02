@@ -25,6 +25,7 @@ from qgis.core import (
     QgsProcessingParameterFile,
     QgsProcessingParameterString,
     QgsProcessingParameterFolderDestination,
+    QgsProcessingOutputFile,
 )
 
 from processing.core.ProcessingConfig import ProcessingConfig
@@ -35,7 +36,6 @@ from iadb_toolbox.utils import (
     execute,
     copy_inputs,
     copy_outputs,
-    res2raster,
 )
 
 
@@ -47,6 +47,7 @@ class SphSimpleMode(IadbAlgorithm):
     PTS_FILE = "PTS_FILE"
     DEM = "DEM"
     OUTPUT = "OUTPUT"
+    OUTPUT_FILE = "OUTPUT_FILE"
 
     def name(self):
         return "sphsimplemode"
@@ -82,6 +83,7 @@ class SphSimpleMode(IadbAlgorithm):
                 self.OUTPUT, self.tr("Output folder")
             )
         )
+        self.addOutput(QgsProcessingOutputFile(self.OUTPUT_FILE, self.tr("RES file")))
 
     def processAlgorithm(self, parameters, context, feedback):
         problem_name = self.parameterAsString(parameters, self.PROBLEM_NAME, context)
@@ -107,11 +109,10 @@ class SphSimpleMode(IadbAlgorithm):
         feedback.pushInfo(self.tr("Copying output files…"))
         copy_outputs(work_dir, problem_name, output)
 
-        feedback.pushInfo(self.tr("Converting output to GeoTiff…"))
-        res2raster(problem_name, output, dem)
-
         feedback.pushInfo(self.tr("Cleanup…"))
         shutil.rmtree(work_dir)
 
-        results = {self.OUTPUT: output}
-        return results
+        return {
+            self.OUTPUT: output,
+            self.OUTPUT_FILE: os.path.join(output, f"{problem_name}.QGIS_res"),
+        }

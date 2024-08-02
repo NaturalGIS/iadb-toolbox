@@ -28,6 +28,7 @@ from qgis.core import (
     QgsProcessingParameterNumber,
     QgsProcessingParameterRasterLayer,
     QgsProcessingParameterFolderDestination,
+    QgsProcessingOutputFile,
 )
 
 from processing.core.ProcessingConfig import ProcessingConfig
@@ -40,7 +41,6 @@ from iadb_toolbox.utils import (
     generate_master_file,
     generate_data_file,
     copy_outputs,
-    res2raster,
 )
 
 
@@ -65,6 +65,7 @@ class SphAdvancedMode(IadbAlgorithm):
     DEM = "DEM"
 
     OUTPUT = "OUTPUT"
+    OUTPUT_FILE = "OUTPUT_FILE"
 
     def name(self):
         return "sphadvancedmode"
@@ -206,6 +207,7 @@ class SphAdvancedMode(IadbAlgorithm):
                 self.OUTPUT, self.tr("Output folder")
             )
         )
+        self.addOutput(QgsProcessingOutputFile(self.OUTPUT_FILE, self.tr("RES file")))
 
     def processAlgorithm(self, parameters, context, feedback):
         problem_name = self.parameterAsString(parameters, self.PROBLEM_NAME, context)
@@ -261,11 +263,10 @@ class SphAdvancedMode(IadbAlgorithm):
         feedback.pushInfo(self.tr("Copying output files…"))
         copy_outputs(work_dir, problem_name, output)
 
-        feedback.pushInfo(self.tr("Converting output to GeoTiff…"))
-        res2raster(problem_name, output, dem)
-
         feedback.pushInfo(self.tr("Cleanup…"))
         shutil.rmtree(work_dir)
 
-        results = {self.OUTPUT: output}
-        return results
+        return {
+            self.OUTPUT: output,
+            self.OUTPUT_FILE: os.path.join(output, f"{problem_name}.QGIS_res"),
+        }

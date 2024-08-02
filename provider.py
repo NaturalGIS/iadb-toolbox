@@ -27,6 +27,7 @@ from qgis.core import QgsProcessingProvider
 from processing.core.ProcessingConfig import ProcessingConfig, Setting
 
 from iadb_toolbox.algs.dem_to_top import DemToTop
+from iadb_toolbox.algs.res_to_netcdf import ResToNetcdf
 from iadb_toolbox.algs.sph_simple_mode import SphSimpleMode
 from iadb_toolbox.algs.sph_advanced_mode import SphAdvancedMode
 from iadb_toolbox.utils import PLUGIN_ROOT, SPH_EXECUTABLE, sph_executable
@@ -68,12 +69,15 @@ class IadbProvider(QgsProcessingProvider):
         ProcessingConfig.removeSetting(SPH_EXECUTABLE)
 
     def loadAlgorithms(self):
-        self.algs = [DemToTop(), SphAdvancedMode(), SphSimpleMode()]
+        self.algs = [DemToTop(), ResToNetcdf(), SphAdvancedMode(), SphSimpleMode()]
         for a in self.algs:
             self.addAlgorithm(a)
 
     def supportsNonFileBasedOutput(self):
         return False
+
+    def supportedOutputRasterLayerExtensions(self):
+        return ["nc"]
 
     def tr(self, string):
         return QCoreApplication.translate(self.__class__.__name__, string)
