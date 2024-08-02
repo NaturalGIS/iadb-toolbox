@@ -11,6 +11,8 @@ The plugin is available QGIS Python plugins repository.
 
 After installation of the plugin it is necessary to configure it, namely to set the setting "SPH executable" ("Settings → Options", then switch to the "Processing" tab and expand "Providers" section) so it points to the executable file of the SPH tool. The SPH tool has to be downloaded and installed separately.
 
+It is also necessary to install required dependencies, namely netCDF4 Python package. Windows users can install it using the OSGeo4W installer.
+
 ### Tools
 
 The plugin provides several tools:
