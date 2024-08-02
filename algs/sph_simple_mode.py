@@ -99,7 +99,7 @@ class SphSimpleMode(IadbAlgorithm):
         batch_file = generate_batch_file(problem_name, work_dir)
 
         feedback.pushInfo(self.tr("Running SPH model…"))
-        commands = ["wine", "cmd.exe", "/c", batch_file]
+        commands = ["cmd.exe", "/c", batch_file]
         execute(commands, feedback)
 
         feedback.pushInfo(self.tr("Copying output files…"))
