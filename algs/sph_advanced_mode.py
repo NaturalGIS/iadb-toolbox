@@ -199,9 +199,9 @@ class SphAdvancedMode(IadbAlgorithm):
         )
 
         self.addParameter(
-            QgsProcessingParameterFile(self.POINTS, self.tr("Points file"))
+            QgsProcessingParameterFile(self.POINTS, self.tr("Points file"), fileFilter=self.tr("PTS files (*.pts *.PTS)"))
         )
-        self.addParameter(QgsProcessingParameterRasterLayer(self.DEM, self.tr("DEM")))
+        self.addParameter(QgsProcessingParameterFile(self.DEM, self.tr("DEM"), fileFilter=self.tr("TOP files (*.top *.TOP)")))
         self.addParameter(
             QgsProcessingParameterFolderDestination(
                 self.OUTPUT, self.tr("Output folder")
@@ -226,11 +226,7 @@ class SphAdvancedMode(IadbAlgorithm):
         tanfi8 = self.parameterAsInt(parameters, self.TANFI8, context)
 
         points_file = self.parameterAsFile(parameters, self.POINTS, context)
-
-        dem = self.parameterAsRasterLayer(parameters, self.DEM, context)
-        if dem is None:
-            raise QgsProcessingException(self.invalidRasterError(parameters, self.DEM))
-
+        dem = self.parameterAsFile(parameters, self.DEM, context)
         output = self.parameterAsString(parameters, self.OUTPUT, context)
 
         params = {

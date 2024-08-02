@@ -69,15 +69,15 @@ class SphSimpleMode(IadbAlgorithm):
             QgsProcessingParameterString(self.PROBLEM_NAME, self.tr("Problem name"))
         )
         self.addParameter(
-            QgsProcessingParameterFile(self.MASTER_FILE, self.tr("Global problem file"))
+            QgsProcessingParameterFile(self.MASTER_FILE, self.tr("Global problem file"), fileFilter=self.tr("DAT files (*.dat *.DAT)"))
         )
         self.addParameter(
-            QgsProcessingParameterFile(self.CONFIG_FILE, self.tr("Configuration file"))
+            QgsProcessingParameterFile(self.CONFIG_FILE, self.tr("Configuration file"), fileFilter=self.tr("DAT files (*.dat *.DAT)"))
         )
         self.addParameter(
-            QgsProcessingParameterFile(self.PTS_FILE, self.tr("Points file"))
+            QgsProcessingParameterFile(self.PTS_FILE, self.tr("Points file"), fileFilter=self.tr("PTS files (*.pts *.PTS)"))
         )
-        self.addParameter(QgsProcessingParameterFile(self.DEM, self.tr("DEM")))
+        self.addParameter(QgsProcessingParameterFile(self.DEM, self.tr("DEM"), fileFilter=self.tr("TOP files (*.top *.TOP)")))
         self.addParameter(
             QgsProcessingParameterFolderDestination(
                 self.OUTPUT, self.tr("Output folder")
@@ -91,11 +91,7 @@ class SphSimpleMode(IadbAlgorithm):
         master_file = self.parameterAsFile(parameters, self.MASTER_FILE, context)
         config_file = self.parameterAsFile(parameters, self.CONFIG_FILE, context)
         pts_file = self.parameterAsFile(parameters, self.PTS_FILE, context)
-
-        dem = self.parameterAsRasterLayer(parameters, self.DEM, context)
-        if dem is None:
-            raise QgsProcessingException(self.invalidRasterError(parameters, self.DEM))
-
+        dem = self.parameterAsFile(parameters, self.DEM, context)
         output = self.parameterAsString(parameters, self.OUTPUT, context)
 
         feedback.pushInfo(self.tr("Preparing inputs…"))

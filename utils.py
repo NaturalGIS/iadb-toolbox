@@ -159,7 +159,7 @@ def copy_inputs(
     shutil.copy(sph_executable(), work_dir)
 
     new_path = os.path.join(work_dir, f"{problem_name}.top")
-    dem2top(dem, new_path)
+    shutil.copyfile(dem, new_path)
 
     new_path = os.path.join(work_dir, f"{problem_name}.pts")
     shutil.copyfile(pts_file, new_path)

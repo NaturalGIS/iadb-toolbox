@@ -24,7 +24,7 @@ from qgis.core import (
     QgsProcessingException,
     QgsProcessingParameterFile,
     QgsProcessingParameterRasterLayer,
-    QgsProcessingParameterRasterDestination,
+    QgsProcessingParameterFileDestination,
 )
 
 from iadb_toolbox.algorithm import IadbAlgorithm
@@ -62,7 +62,7 @@ class ResToNetcdf(IadbAlgorithm):
         )
         self.addParameter(QgsProcessingParameterRasterLayer(self.DEM, self.tr("DEM")))
         self.addParameter(
-            QgsProcessingParameterRasterDestination(self.OUTPUT, self.tr("Output"))
+            QgsProcessingParameterFileDestination(self.OUTPUT, self.tr("Output"), self.tr("netCDF files (*.nc *.NC)"))
         )
 
     def processAlgorithm(self, parameters, context, feedback):
@@ -71,7 +71,7 @@ class ResToNetcdf(IadbAlgorithm):
         if dem is None:
             raise QgsProcessingException(self.invalidRasterError(parameters, self.DEM))
 
-        output = self.parameterAsOutputLayer(parameters, self.OUTPUT, context)
+        output = self.parameterAsFileOutput(parameters, self.OUTPUT, context)
 
         res2netcdf(res_file, dem, output)
 
