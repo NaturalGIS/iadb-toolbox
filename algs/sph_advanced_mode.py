@@ -90,7 +90,7 @@ class SphAdvancedMode(IadbAlgorithm):
             QgsProcessingParameterNumber(
                 self.DT,
                 self.tr("Analysis time step"),
-                Qgis.ProcessingNumberParameterType.Double,
+                QgsProcessingParameterNumber.Double,
                 0.1,
                 minValue=1e-3,
                 maxValue=1,
@@ -100,7 +100,7 @@ class SphAdvancedMode(IadbAlgorithm):
             QgsProcessingParameterNumber(
                 self.TIME_END,
                 self.tr("Total analysis time"),
-                Qgis.ProcessingNumberParameterType.Integer,
+                QgsProcessingParameterNumber.Integer,
                 1000,
                 minValue=1,
                 maxValue=10000,
@@ -110,7 +110,7 @@ class SphAdvancedMode(IadbAlgorithm):
             QgsProcessingParameterNumber(
                 self.PRINT_STEP,
                 self.tr("Number of steps to print"),
-                Qgis.ProcessingNumberParameterType.Integer,
+                QgsProcessingParameterNumber.Integer,
                 5,
                 minValue=1,
                 maxValue=100,
@@ -121,7 +121,7 @@ class SphAdvancedMode(IadbAlgorithm):
             QgsProcessingParameterNumber(
                 self.CGRA,
                 self.tr("Gravity acceleration"),
-                Qgis.ProcessingNumberParameterType.Double,
+                QgsProcessingParameterNumber.Double,
                 9.81,
                 minValue=1e-3,
                 maxValue=10,
@@ -131,7 +131,7 @@ class SphAdvancedMode(IadbAlgorithm):
             QgsProcessingParameterNumber(
                 self.DENS,
                 self.tr("Density of the mixture"),
-                Qgis.ProcessingNumberParameterType.Integer,
+                QgsProcessingParameterNumber.Integer,
                 2000,
                 minValue=1000,
                 maxValue=3000,
@@ -141,7 +141,7 @@ class SphAdvancedMode(IadbAlgorithm):
             QgsProcessingParameterNumber(
                 self.CMANNING,
                 self.tr("Voellmy’s coefficient of turbulent viscosity "),
-                Qgis.ProcessingNumberParameterType.Integer,
+                QgsProcessingParameterNumber.Integer,
                 0,
                 minValue=0,
                 maxValue=100,
@@ -151,7 +151,7 @@ class SphAdvancedMode(IadbAlgorithm):
             QgsProcessingParameterNumber(
                 self.EROS_COEF,
                 self.tr("Erosion coefficient"),
-                Qgis.ProcessingNumberParameterType.Integer,
+                QgsProcessingParameterNumber.Integer,
                 0,
                 minValue=0,
                 maxValue=100,
@@ -161,7 +161,7 @@ class SphAdvancedMode(IadbAlgorithm):
             QgsProcessingParameterNumber(
                 self.NFRICT,
                 self.tr("Rheological type to calculate basal friction"),
-                Qgis.ProcessingNumberParameterType.Integer,
+                QgsProcessingParameterNumber.Integer,
                 7,
                 minValue=0,
                 maxValue=100,
@@ -171,7 +171,7 @@ class SphAdvancedMode(IadbAlgorithm):
             QgsProcessingParameterNumber(
                 self.TAUY0,
                 self.tr("Bingham fluids cohesion"),
-                Qgis.ProcessingNumberParameterType.Double,
+                QgsProcessingParameterNumber.Double,
                 0,
                 minValue=0,
                 maxValue=100,
@@ -181,7 +181,7 @@ class SphAdvancedMode(IadbAlgorithm):
             QgsProcessingParameterNumber(
                 self.VISCO,
                 self.tr("Bingham fluids viscosity"),
-                Qgis.ProcessingNumberParameterType.Double,
+                QgsProcessingParameterNumber.Double,
                 0,
                 minValue=0,
                 maxValue=100,
@@ -191,7 +191,7 @@ class SphAdvancedMode(IadbAlgorithm):
             QgsProcessingParameterNumber(
                 self.TANFI8,
                 self.tr("Tangents of the final friction angles"),
-                Qgis.ProcessingNumberParameterType.Double,
+                QgsProcessingParameterNumber.Double,
                 0.218,
                 minValue=1e-3,
                 maxValue=3.1415926,
