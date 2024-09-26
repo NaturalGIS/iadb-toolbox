@@ -27,7 +27,7 @@ from qgis.core import (
 )
 
 from iadb_toolbox.algorithm import IadbAlgorithm
-from iadb_toolbox.utils import dem2top
+from iadb_toolbox.utils import dem_to_top
 
 
 class DemToTop(IadbAlgorithm):
@@ -67,7 +67,7 @@ class DemToTop(IadbAlgorithm):
 
         output = self.parameterAsFileOutput(parameters, self.OUTPUT, context)
 
-        dem2top(dem, output)
+        dem_to_top(dem, output)
 
         results = {self.OUTPUT: output}
         return results

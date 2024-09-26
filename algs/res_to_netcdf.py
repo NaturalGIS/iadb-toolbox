@@ -28,7 +28,7 @@ from qgis.core import (
 )
 
 from iadb_toolbox.algorithm import IadbAlgorithm
-from iadb_toolbox.utils import res2netcdf
+from iadb_toolbox.utils import res_to_netcdf
 
 
 class ResToNetcdf(IadbAlgorithm):
@@ -73,6 +73,6 @@ class ResToNetcdf(IadbAlgorithm):
 
         output = self.parameterAsFileOutput(parameters, self.OUTPUT, context)
 
-        res2netcdf(res_file, dem, output)
+        res_to_netcdf(res_file, dem, output)
 
         return {self.OUTPUT: output}

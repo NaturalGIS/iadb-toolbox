@@ -252,7 +252,7 @@ def generate_data_file(file_name: str, params: dict[str, Any]):
         f.write("  1.e+12    \n")
 
 
-def dem2top(layer: QgsRasterLayer, file_path: str):
+def dem_to_top(layer: QgsRasterLayer, file_path: str):
     """
     Converts a single-band raster layer representing DEM to a text format (.top)
     required by SPH tool.
@@ -319,7 +319,7 @@ def points_to_pts(source: QgsProcessingFeatureSource, field_name: str | None, us
 
     with open(file_path, "w", encoding="utf-8") as f:
         f.write("npoin source  grid spacing  facthsml\n")
-        f.write(f"   {source.featureCount()}           {dist}      2\n")
+        f.write(f"   {source.featureCount()}           {dist}      10.0    10.0       2\n")
 
         for ft in source.getFeatures(request):
             p = ft.geometry().constGet()
@@ -339,7 +339,7 @@ def copy_outputs(work_dir: str, problem_name: str, output_dir: str):
             shutil.copy(output_name, output_dir)
 
 
-def res2netcdf(res_file: str, dem: QgsRasterLayer, output: str):
+def res_to_netcdf(res_file: str, dem: QgsRasterLayer, output: str):
     """
     COnverts QGIS_res file produced by SPH to a netCDF4 format.
     """
