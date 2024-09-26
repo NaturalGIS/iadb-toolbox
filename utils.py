@@ -267,6 +267,8 @@ def dem_to_top(layer: QgsRasterLayer, file_path: str):
     pixel_count = width * height
     extent = layer.extent()
 
+    valid_count = 0
+
     with open(file_path, "w", encoding="utf-8") as f:
         f.write("ictop\n")
         f.write("  10\n")
@@ -285,10 +287,24 @@ def dem_to_top(layer: QgsRasterLayer, file_path: str):
             for col in range(width):
                 x = extent.xMinimum() + (col + 0.5) * pixel_size
                 y = extent.yMaximum() - (row + 0.5) * pixel_size
-                f.write(f"{x}\t{y}\t{block.value(row, col)}\n")
+                if not block.isNoData(row, col):
+                    valid_count += 1
+                    f.write(f"{x}\t{y}\t{block.value(row, col)}\n")
 
         f.write("topo_props\n")
         f.write("  0\n")
+
+    bak_name = f"{file_path}.bak"
+    os.rename(file_path, bak_name)
+    with open(bak_name, "r", encoding="utf-8") as bak:
+        with open(file_path, "w", encoding="utf-8") as f:
+            for i, line in enumerate(bak):
+                if i == 3:
+                    f.write(f" {valid_count}     {pixel_size}    \n")
+                    continue
+                f.write(line)
+
+    os.remove(bak_name)
 
 
 def points_to_pts(source: QgsProcessingFeatureSource, field_name: str | None, use_z: bool, file_path: str):
@@ -320,6 +336,7 @@ def points_to_pts(source: QgsProcessingFeatureSource, field_name: str | None, us
     with open(file_path, "w", encoding="utf-8") as f:
         f.write("npoin source  grid spacing  facthsml\n")
         f.write(f"   {source.featureCount()}           {dist}      10.0    10.0       2\n")
+        f.write("---  X   ---------  Y   -------  h  -----\n")
 
         for ft in source.getFeatures(request):
             p = ft.geometry().constGet()
