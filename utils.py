@@ -43,6 +43,9 @@ from qgis.core import (
     QgsProcessingException,
     QgsRasterFileWriter,
     QgsRasterBlock,
+    QgsProcessingFeatureSource,
+    QgsFeatureRequest,
+    QgsFeature
 )
 from processing.core.ProcessingConfig import ProcessingConfig
 
@@ -286,6 +289,41 @@ def dem2top(layer: QgsRasterLayer, file_path: str):
 
         f.write("topo_props\n")
         f.write("  0\n")
+
+
+def points_to_pts(source: QgsProcessingFeatureSource, field_name: str | None, use_z: bool, file_path: str):
+    """
+    Converts a point vector layer representing unstable material to a text format (.pts)
+    required by SPH tool.
+
+    Height of the unstable material is taken either from the field_name attribute or, if use_z
+    is True from the Z coordinate. In the latter case values from the field_name attribute are
+    ignored.
+
+    The PTS format is basically a raster in the XYZ format with the custom header.
+    """
+    request = QgsFeatureRequest()
+    if use_z:
+        request.setNoAttributes()
+    else:
+        request.setSubsetOfAttributes([field_name], source.fields())
+
+
+    f1 = QgsFeature()
+    r = QgsFeatureRequest([1])
+    ok = source.getFeatures(r).nextFeature(f1)
+    f2 = QgsFeature()
+    r = QgsFeatureRequest([2])
+    ok = source.getFeatures(r).nextFeature(f2)
+    dist = f1.geometry().asPoint().distance(f2.geometry().asPoint())
+
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write("npoin source  grid spacing  facthsml\n")
+        f.write(f"   {source.featureCount()}           {dist}      2\n")
+
+        for ft in source.getFeatures(request):
+            p = ft.geometry().constGet()
+            f.write(f"{p.x()}\t{p.y()}\t{p.z() if use_z else ft[field_name]}\n")
 
 
 def copy_outputs(work_dir: str, problem_name: str, output_dir: str):
