@@ -360,7 +360,6 @@ def res_to_netcdf(res_file: str, dem: QgsRasterLayer, output: str):
     """
     COnverts QGIS_res file produced by SPH to a netCDF4 format.
     """
-
     pixel_size = dem.rasterUnitsPerPixelX()
     extent = dem.extent()
     crs = dem.crs()
@@ -421,6 +420,8 @@ def res_to_netcdf(res_file: str, dem: QgsRasterLayer, output: str):
     )
     height.units = "m"
     height.positive = "up"
+    height.grid_mapping = "spatial_ref"
+    height.grid_mapping_name = "latitude_longitude"
 
     vx = ds.createVariable(
         "Vx",
@@ -432,6 +433,9 @@ def res_to_netcdf(res_file: str, dem: QgsRasterLayer, output: str):
         ),
         fill_value=-9999,
     )
+    vx.grid_mapping = "spatial_ref"
+    vx.grid_mapping_name = "latitude_longitude"
+
     vy = ds.createVariable(
         "Vy",
         "f8",
@@ -442,6 +446,9 @@ def res_to_netcdf(res_file: str, dem: QgsRasterLayer, output: str):
         ),
         fill_value=-9999,
     )
+    vy.grid_mapping = "spatial_ref"
+    vy.grid_mapping_name = "latitude_longitude"
+
     vavg = ds.createVariable(
         "Vavg",
         "f8",
@@ -452,6 +459,8 @@ def res_to_netcdf(res_file: str, dem: QgsRasterLayer, output: str):
         ),
         fill_value=-9999,
     )
+    vavg.grid_mapping = "spatial_ref"
+    vavg.grid_mapping_name = "latitude_longitude"
 
     for row in range(raster_height):
         y = extent.yMaximum() - (row + 0.5) * pixel_size
@@ -462,11 +471,11 @@ def res_to_netcdf(res_file: str, dem: QgsRasterLayer, output: str):
         longitude[col] = x
 
     data = []
-    dates = [date]
-    h = numpy.full((raster_width, raster_height), -9999)
-    v_x = numpy.full((raster_width, raster_height), -9999)
-    v_y = numpy.full((raster_width, raster_height), -9999)
-    v_avg = numpy.full((raster_width, raster_height), -9999)
+    dates = []
+    h = numpy.full((raster_height, raster_width), -9999)
+    v_x = numpy.full((raster_height, raster_width), -9999)
+    v_y = numpy.full((raster_height, raster_width), -9999)
+    v_avg = numpy.full((raster_height, raster_width), -9999)
     c = 0
 
     with open(res_file) as f:
@@ -493,7 +502,7 @@ def res_to_netcdf(res_file: str, dem: QgsRasterLayer, output: str):
                     groups[k] = list(v)
 
                 for row in range(raster_height):
-                    y = extent.yMaximum() - (row + 0.5) * pixel_size
+                    y = truncate(extent.yMaximum() - (row + 0.5) * pixel_size, 1)
                     if y in groups.keys():
                         for i in groups[y]:
                             col = math.trunc((i[0] - extent.xMinimum()) / pixel_size)
@@ -510,10 +519,10 @@ def res_to_netcdf(res_file: str, dem: QgsRasterLayer, output: str):
                 vy[c, :, :] = v_y
                 vavg[c, :, :] = v_avg
 
-                h = numpy.full((raster_width, raster_height), -9999)
-                v_x = numpy.full((raster_width, raster_height), -9999)
-                v_y = numpy.full((raster_width, raster_height), -9999)
-                v_avg = numpy.full((raster_width, raster_height), -9999)
+                h = numpy.full((raster_height, raster_width), -9999)
+                v_x = numpy.full((raster_height, raster_width), -9999)
+                v_y = numpy.full((raster_height, raster_width), -9999)
+                v_avg = numpy.full((raster_height, raster_width), -9999)
                 block_read = False
 
             values = [float(v) for v in line.split()]
@@ -522,3 +531,11 @@ def res_to_netcdf(res_file: str, dem: QgsRasterLayer, output: str):
     time[:] = date2num(dates, units=time.units, calendar=time.calendar)
 
     ds.close()
+
+
+def truncate(number: float, digits: int) -> float:
+    decimals = len(str(number).split('.')[1])
+    if decimals <= digits:
+        return number
+    step = 10.0 ** digits
+    return math.trunc(step * number) / step
